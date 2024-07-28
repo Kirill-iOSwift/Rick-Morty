@@ -1,21 +1,19 @@
 //
 //  CellView.swift
 //  Rick&Morty
-//
-//  Created by Кирилл on 24.07.2024.
-//
 
 import UIKit
 
-class BottomView: UIView {
+final class BottomView: UIView {
 	
 	var label: UILabel
+	var button: UIButton
+	var image: UIImageView
 	
-	private let image = UIImageView()
-	private let button = UIButton(type: .system)
-	
-	init(frame: CGRect, label: UILabel) {
+	init(frame: CGRect, label: UILabel, button: UIButton, image: UIImageView) {
 		self.label = label
+		self.button = button
+		self.image = image
 		super.init(frame: frame)
 		setupView()
 		setupConstraints()
@@ -26,13 +24,13 @@ class BottomView: UIView {
 	}
 	
 	private func setupView() {
-		self.backgroundColor = .systemGray4
+		self.backgroundColor = .systemGray6
+		image.tintColor = .black
+		label.font = .systemFont(ofSize: 22)
+		self.layer.cornerRadius = 20
 		
-		image.image = UIImage(systemName: "play.tv")
-		let imageButtun = UIImage(systemName: "suit.heart")
-		button.setImage(imageButtun, for: .normal)
-		
-		[image, label, button].forEach {
+		button.titleLabel?.font = UIFont.systemFont(ofSize: 30)
+[image, label, button].forEach {
 			$0.translatesAutoresizingMaskIntoConstraints = false
 			addSubview($0)
 		}
@@ -40,24 +38,21 @@ class BottomView: UIView {
 	
 	private func setupConstraints() {
 		NSLayoutConstraint.activate([
-			// Constraints для imageView
 			image.centerYAnchor.constraint(equalTo: self.centerYAnchor),
 			image.leadingAnchor.constraint(equalTo: self.leadingAnchor,constant: 15),
 			image.widthAnchor.constraint(equalToConstant: 30),
 			image.heightAnchor.constraint(equalToConstant: 30),
 			
-			// Constraints для label
 			label.centerYAnchor.constraint(equalTo: self.centerYAnchor),
 			label.leadingAnchor.constraint(equalTo: image.trailingAnchor, constant: 20),
 			
-			// Constraints для button
 			button.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-			button.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15)
+			button.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15),
 		])
 	}
 }
 
-class TwoLabels: UIView {
+class NameLabel: UIView {
 	
 	let nameLabel: UILabel
 	
@@ -74,6 +69,8 @@ class TwoLabels: UIView {
 	func setLabels() {
 		self.backgroundColor = .white
 		
+		nameLabel.font = .boldSystemFont(ofSize: 22)
+		
 		nameLabel.translatesAutoresizingMaskIntoConstraints = false
 		addSubview(nameLabel)
 		
@@ -83,3 +80,17 @@ class TwoLabels: UIView {
 		])
 	}
 }
+
+// MARK: - Preview
+
+//struct CellViewPreviews: PreviewProvider {
+//	struct ViewControllerContainer: UIViewControllerRepresentable {
+//		func makeUIViewController(context: Context) -> some UIViewController {
+//			UINavigationController(rootViewController: EpisodesViewController())
+//		}
+//		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
+//	}
+//	static var previews: some View {
+//		ViewControllerContainer().edgesIgnoringSafeArea(.all)
+//	}
+//}

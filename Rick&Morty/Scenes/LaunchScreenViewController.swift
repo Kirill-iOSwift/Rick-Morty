@@ -53,8 +53,11 @@ final class LaunchScreenViewController: UIViewController {
 	private func rotationPortal() {
 		let rotation = CABasicAnimation(keyPath: "transform.rotation")
 //		rotation.fromValue = 0
-		rotation.toValue = Double.pi * 6  // Полный оборот (360 градусов)
-		rotation.duration = 4 // Продолжительность 5 секунд
+		rotation.toValue = Double.pi * 2  // Полный оборот (360 градусов)
+		rotation.duration = 1 // Продолжительность 5 секунд
+		//rotation.isCumulative = true
+		rotation.repeatCount = .infinity
+//		NSLog("\(#function)", rotation.duration)
 //		rotation.fillMode = .forwards
 //		rotation.isRemovedOnCompletion = false
 		portalImageView.layer.add(rotation, forKey: "rotationAnimation")
@@ -64,5 +67,16 @@ final class LaunchScreenViewController: UIViewController {
 		}
 	}
 	
+	override func viewWillDisappear(_ animated: Bool) {
+		   super.viewWillDisappear(animated)
+		   
+		   // Остановка анимации перед переходом на другой экран
+		   portalImageView.layer.removeAnimation(forKey: "rotationAnimation")
+	   }
+	   
+	   deinit {
+		   // Дополнительная очистка, если требуется
+		   print("ViewController deinitialized")
+	   }
 }
 

@@ -1,21 +1,18 @@
 //
 //  EpisodeViewCell.swift
 //  Rick&Morty
-//
-//  Created by Кирилл on 24.07.2024.
-//
 
 import UIKit
 import SwiftUI
 
-class ItemCell: UICollectionViewCell {
+final class ItemCell: UICollectionViewCell {
 	static let reuseIdentifier = "ItemCell"
 
-	private let imageView = UIImageView()
+	private var imageView = UIImageView()
 	private let nameLabel = UILabel()
 	private let episodeLabel = UILabel()
 	
-	var addToFavoritesAction: (() -> Void)?
+//	var addToFavoritesAction: (() -> Void)?
 
 	override init(frame: CGRect) {
 		super.init(frame: frame)
@@ -37,17 +34,23 @@ class ItemCell: UICollectionViewCell {
 		contentView.layer.shadowOpacity = 0.5
 		   
 	   }
+	
+	override func prepareForReuse() {
+		super.prepareForReuse()
+		imageView.image = nil
+		nameLabel.text = nil
+		episodeLabel.text = nil
+	}
 
 	private func setupViews() {
 		imageView.translatesAutoresizingMaskIntoConstraints = false
-		imageView.backgroundColor = .yellow
 		
 		episodeLabel.text = "Episode"
 		nameLabel.text = "??????"
 		
 		contentView.addSubview(imageView)
 		
-		let labelCell = TwoLabels(frame: .zero, nameLabel: nameLabel)
+		let labelCell = NameLabel(frame: .zero, nameLabel: nameLabel)
 		labelCell.translatesAutoresizingMaskIntoConstraints = false
 		contentView.addSubview(labelCell)
 	
@@ -73,26 +76,30 @@ class ItemCell: UICollectionViewCell {
 		])
 	}
 
-	@objc private func addToFavoritesTapped() {
-		addToFavoritesAction?()
-	}
-
+//	@objc private func addToFavoritesTapped() {
+//		addToFavoritesAction?()
+//	}
 	func configure(with item: Item) {
-		nameLabel.text = item.episode
-		imageView.image = UIImage(named: item.imageName)
-		episodeLabel.text = item.episode
-		
-	}
+			nameLabel.text = item.name
+			episodeLabel.text = item.episode
+			if let imageURL = item.imageName {
+				imageView.setImage(from: imageURL)
+				//imageView.loadImage(from: imageURL)
+			} else {
+				imageView.image = nil
+			}
+		}
 }
 
-struct ItemCellViewPreviews: PreviewProvider {
-	struct ViewControllerContainer: UIViewControllerRepresentable {
-		func makeUIViewController(context: Context) -> some UIViewController {
-			UINavigationController(rootViewController: EpisodesViewController(network: NetworkManager()))
-		}
-		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
-	}
-	static var previews: some View {
-		ViewControllerContainer().edgesIgnoringSafeArea(.all)
-	}
-}
+//struct ItemCellViewPreviews: PreviewProvider {
+//	struct ViewControllerContainer: UIViewControllerRepresentable {
+//		func makeUIViewController(context: Context) -> some UIViewController {
+//			UINavigationController(rootViewController: EpisodesViewController())
+//		}
+//		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
+//	}
+//	static var previews: some View {
+//		ViewControllerContainer().edgesIgnoringSafeArea(.all)
+//	}
+//}
+

@@ -1,29 +1,31 @@
 //
 //  EpisodesViewController.swift
 //  Rick&Morty
-//
-//  Created by Кирилл on 14.07.2024.
-//
+
 
 import UIKit
 import SwiftUI
+import Combine
+
 
 final class EpisodesViewController: UIViewController {
 	
-	var network: NetworkProtocol
+	enum Section {
+		case main
+	}
 	
 	var collectionView: UICollectionView!
-	var dataSource: UICollectionViewDiffableDataSource<Int, Item>!
+	var dataSource: UICollectionViewDiffableDataSource<Section, Item>!
 	
-	var items: [Item] = []
+	//var items: [Item] = []
 	
 	let searchBar = UISearchBar()
 	let logoImageView = UIImageView()
 	
-	private let buttonSort = UIButton(type: .system)
+	weak var viewModel: EpisodesViewModelProtocol?
 	
-	init(network: NetworkProtocol) {
-		self.network = network
+	init(viewModel: EpisodesViewModelProtocol) {
+		self.viewModel = viewModel
 		super.init(nibName: nil, bundle: nil)
 	}
 	
@@ -31,10 +33,7 @@ final class EpisodesViewController: UIViewController {
 		fatalError("init(coder:) has not been implemented")
 	}
 	
-	override func viewDidAppear(_ animated: Bool) {
-		super.viewDidAppear(animated)
-		print(items.count)
-	}
+	private let buttonSort = UIButton(type: .system)
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -44,13 +43,25 @@ final class EpisodesViewController: UIViewController {
 		setButtunSort()
 		setupCollectionView()
 		setupDataSource()
-//		network.fetchData()
 		
-		DispatchQueue.main.async { [weak self] in
-			self?.items = NetworkManager.result
-			self?.fetchData()
+		viewModel?.downLoad { [weak self] result in
+			self?.fetchData(items: result)
 		}
+		
+		//fetchEpisodes()
 	}
+	
+//	private func fetchEpisodes() {
+//		NetworkManager.shared.fetchEpisodes { [weak self] result in
+//			switch result {
+//				case .success(let episodes):
+//					self?.items = episodes
+//					self?.fetchData()
+//				case .failure(let error):
+//					print("Error fetching episodes: \(error)")
+//			}
+//		}
+//	}
 	
 	private func setButtunSort() {
 		
@@ -65,6 +76,8 @@ final class EpisodesViewController: UIViewController {
 		buttonSort.layer.shadowOffset = CGSize(width: 0, height: 4)
 		buttonSort.translatesAutoresizingMaskIntoConstraints = false
 		
+		buttonSort.addTarget(self, action: #selector(tap), for: .touchUpInside)
+		
 		view.addSubview(buttonSort)
 		
 		NSLayoutConstraint.activate([
@@ -74,6 +87,10 @@ final class EpisodesViewController: UIViewController {
 			buttonSort.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20)
 			
 		])
+	}
+	
+	@objc private func tap() {
+		
 	}
 	
 	private func setLogotype() {
@@ -108,24 +125,29 @@ final class EpisodesViewController: UIViewController {
 extension EpisodesViewController {
 	
 	func createLayout() -> UICollectionViewLayout {
+		
 		let itemSize = NSCollectionLayoutSize(
-			widthDimension: .fractionalWidth(1.0),
-			heightDimension: .fractionalHeight(1.0)
+			widthDimension: .fractionalWidth(1),
+			heightDimension: .fractionalHeight(1)
 		)
+		
+		
+		
 		let item = NSCollectionLayoutItem(layoutSize: itemSize)
-		
-		
+	
 		let groupSize = NSCollectionLayoutSize(
-			widthDimension: .fractionalWidth(1.0),
-			heightDimension: .fractionalHeight(0.5)
+			widthDimension: .fractionalWidth(1),
+			heightDimension: .fractionalHeight(0.7)
 		)
 		let group = NSCollectionLayoutGroup.vertical(
 			layoutSize: groupSize,
 			subitems: [item]
 		)
+	
 		
 		let section = NSCollectionLayoutSection(group: group)
-		section.interGroupSpacing = 10
+		
+		section.interGroupSpacing = 30
 		section.contentInsets = NSDirectionalEdgeInsets(
 			top: 10,
 			leading: 20,
@@ -156,42 +178,47 @@ extension EpisodesViewController {
 	}
 	
 	func setupDataSource() {
-		dataSource = UICollectionViewDiffableDataSource<Int, Item>(
+		dataSource = UICollectionViewDiffableDataSource<Section, Item>(
 			collectionView: collectionView
 		) { (collectionView, indexPath, item) -> UICollectionViewCell? in
-			let cell = collectionView.dequeueReusableCell(
+			
+			guard let cell = collectionView.dequeueReusableCell(
 				withReuseIdentifier: ItemCell.reuseIdentifier,
 				for: indexPath
-			) as! ItemCell
+			) as? ItemCell else { return UICollectionViewCell() }
 			cell.configure(with: item)
-			cell.addToFavoritesAction = {
-				FavoritesManager.shared.add(item: item)
-			}
+			
+//			cell.addToFavoritesAction = {
+//				FavoritesManager.shared.add(item: item)
+//			}
 			return cell
 		}
 	}
 	
-	func fetchData() {
+	func fetchData(items: [Item]) {
 		// Получение данных с сервера и обновление коллекции
 		// Пример:
 		// self.items = fetchedItems
-		var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
-		snapshot.appendSections([0])
+		
+	
+		
+		var snapshot = NSDiffableDataSourceSnapshot<Section, Item>()
+		snapshot.appendSections([.main])
 		snapshot.appendItems(items)
 		dataSource.apply(snapshot, animatingDifferences: true)
 	}
 }
 
 // MARK: - Preview
-
-struct ContentViewPreviews: PreviewProvider {
-	struct ViewControllerContainer: UIViewControllerRepresentable {
-		func makeUIViewController(context: Context) -> some UIViewController {
-			UINavigationController(rootViewController: EpisodesViewController(network: NetworkManager()))
-		}
-		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
-	}
-	static var previews: some View {
-		ViewControllerContainer().edgesIgnoringSafeArea(.all)
-	}
-}
+//
+//struct ContentViewPreviews: PreviewProvider {
+//	struct ViewControllerContainer: UIViewControllerRepresentable {
+//		func makeUIViewController(context: Context) -> some UIViewController {
+//			UINavigationController(rootViewController: EpisodesViewController())
+//		}
+//		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
+//	}
+//	static var previews: some View {
+//		ViewControllerContainer().edgesIgnoringSafeArea(.all)
+//	}
+//}

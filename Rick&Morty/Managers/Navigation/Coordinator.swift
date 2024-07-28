@@ -15,8 +15,6 @@ protocol CoordinatorProtocol {
 
 class MainCoordinator: CoordinatorProtocol {
 	
-	let network = NetworkManager()
-	
 	var navigationController: UINavigationController
 	
 	init(navigationController: UINavigationController) {
@@ -24,10 +22,10 @@ class MainCoordinator: CoordinatorProtocol {
 	}
 	
 	func startMain() {
-		network.fetchData()
 		let mainViewController = LaunchScreenViewController()
 		mainViewController.coordinator = self
 		navigationController.pushViewController(mainViewController, animated: true)
+	
 	}
 	
 	func startNext() {
@@ -37,15 +35,13 @@ class MainCoordinator: CoordinatorProtocol {
 	
 		private func setStartViewController() -> UIViewController {
 			let tabbarController = UITabBarController()
-			let episodes = EpisodesViewController(network: network)
-			let favourites = FavouriteEpisodeViewController()
+			let network = NetworkManager()
+			let viewModel = EpisodesViewModel(network: network)
+			let episodes = EpisodesViewController(viewModel: viewModel)
+			let favourites = FavouriteEpisodeViewController(viewModel: viewModel)
 			tabbarController.viewControllers = [episodes, favourites]
 	
-			episodes.tabBarItem = UITabBarItem(
-				title: "Episodes",
-				image: UIImage(systemName: "house"),
-				tag: 0
-			)
+			episodes.tabBarItem = UITabBarItem(title: "Episode", image: UIImage(systemName: "house"), tag: 0)
 	
 			favourites.tabBarItem = UITabBarItem(
 				title: "Favourites",
