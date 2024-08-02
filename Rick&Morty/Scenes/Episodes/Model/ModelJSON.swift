@@ -11,7 +11,7 @@ import Foundation
 struct RickAndMorty: Decodable {
 	let info: Info
 	var results: [Episode]
-	
+
 	// MARK: Info
 	
 	struct Info: Decodable {
@@ -31,6 +31,7 @@ struct RickAndMorty: Decodable {
 		let characters: [URL]
 		let url: String
 		let created: String
+
 	}
 	
 	// MARK: Character
@@ -44,6 +45,7 @@ struct RickAndMorty: Decodable {
 		let episode: [String]
 		let url: String
 		let created: String
+
 	}
 	
 	struct Origin: Decodable {
