@@ -1,32 +1,32 @@
 //
 //  ImageLoader.swift
 //  Rick&Morty
-//
-//  Created by Кирилл on 27.07.2024.
-//
+
 
 import UIKit
 
+// MARK: - Extension UIImageView For Dowload Pictures
+
 extension UIImageView {
+	
+	// MARK: Cache
 	
 	private static var imageCache = NSCache<NSString, UIImage>()
 	
+	// MARK: Methods
+	
 	func setImage(from url: URL) {
-		let urlString = url.absoluteString as NSString
 		
-		// Попробуйте получить изображение из кеша
+		let urlString = url.absoluteString as NSString
 		if let cachedImage = UIImageView.imageCache.object(forKey: urlString) {
 			self.image = cachedImage
 			return
 		}
 		
-		// Загрузите изображение из сети
 		getData(from: url) { data, response, error in
+			
 			guard let data = data, error == nil, let image = UIImage(data: data) else { return }
-			
-			// Кешируйте изображение
 			UIImageView.imageCache.setObject(image, forKey: urlString)
-			
 			DispatchQueue.main.async {
 				self.image = image
 			}

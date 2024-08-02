@@ -6,14 +6,19 @@
 //
 
 import UIKit
-import SwiftUI
+
+// MARK: - HeaderView
 
 final class HeaderView: UIView {
+	
+	// MARK: Properties
 	
 	let imageCharacterView: UIImageView
 	var buttonPhoto: UIButton
 	let nameCharacterLabel: UILabel
 	let infoLabel: UILabel
+	
+	// MARK: Initialization
 	
 	init(
 		frame: CGRect,
@@ -36,7 +41,16 @@ final class HeaderView: UIView {
 		fatalError("init(coder:) has not been implemented")
 	}
 	
-	func setupElements() {
+	// MARK: - Methods
+	
+	override func layoutSubviews() {
+		super.layoutSubviews()
+		imageCharacterView.layer.masksToBounds = true
+		imageCharacterView.layer.cornerRadius = imageCharacterView.frame.width / 2
+		
+	}
+	
+	private func setupElements() {
 		
 		imageCharacterView.contentMode = .scaleAspectFit
 		imageCharacterView.clipsToBounds = true
@@ -63,7 +77,9 @@ final class HeaderView: UIView {
 		}
 	}
 	
-	func setupConstraints() {
+	// MARK: Setup Constraints
+	
+	private func setupConstraints() {
 		
 		NSLayoutConstraint.activate([
 			imageCharacterView.topAnchor.constraint(equalTo: self.topAnchor),
@@ -86,27 +102,8 @@ final class HeaderView: UIView {
 		])
 	}
 	
-	override func layoutSubviews() {
-		super.layoutSubviews()
-		imageCharacterView.layer.masksToBounds = true
-		imageCharacterView.layer.cornerRadius = imageCharacterView.frame.width / 2
-		
-	}
-	
 	deinit {
 		print("deinit Header")
-	}
-}
-
-struct HeaderViewPreviews: PreviewProvider {
-	struct ViewControllerContainer: UIViewControllerRepresentable {
-		func makeUIViewController(context: Context) -> some UIViewController {
-			UINavigationController(rootViewController: CharacterTableViewController())
-		}
-		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
-	}
-	static var previews: some View {
-		ViewControllerContainer().edgesIgnoringSafeArea(.all)
 	}
 }
 

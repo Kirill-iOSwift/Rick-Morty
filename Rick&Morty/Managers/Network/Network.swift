@@ -2,113 +2,105 @@
 //  Network.swift
 //  Rick&Morty
 
+// MARK: - Network Manager
+
 import Foundation
 
-protocol NetworkManagerProtocol: AnyObject {
-	func fetchEpisodes(completion: @escaping (Result<[Item], Error>) -> Void)
-	//func fetchCharacterImageURL(characterURL: String, completion: @escaping (Result<URL, Error>) -> Void)
+// MARK: - Enum Url
+
+fileprivate enum UrlRickAndMoarty: String {
+	case url = "https://rickandmortyapi.com/api/episode"
 }
 
-final class NetworkManager: NetworkManagerProtocol {
-	//static let shared = NetworkManager()
+// MARK: - Protocol
+
+protocol NetworkManagerProtocol: AnyObject {
+	func fetchEpisodeData(completion: @escaping ([EpisodeTest]) -> Void)
+}
+
+// MARK: - Class
+
+struct EpisodeTest: Hashable {
+	let id = UUID()
+	let nameEpisode: String
+	let imagePers: URL
+	let numberEpisode: String
 	
-	//private init() {}
+	let namePers: String
+	let statusPers: String
+	let speciePers: String
+	let genderPers: String
+	let originPers: String
+}
+
+final class NetworkTest: NetworkManagerProtocol {
 	
-	func fetchEpisodes(completion: @escaping (Result<[Item], Error>) -> Void) {
-		let url = URL(string: "https://rickandmortyapi.com/api/episode")!
+	func fetchEpisodeData(completion: @escaping ([EpisodeTest]) -> Void) {
+		guard let url = URL(string: UrlRickAndMoarty.url.rawValue) else { return }
+		let urlRequest = URLRequest(url: url)
+		let session = URLSession(configuration: .default)
+		let decoder = JSONDecoder()
+		let lock = NSLock()
+				
+		var modelCharacters = [EpisodeTest]()
 		
-		URLSession.shared.dataTask(with: url) { data, response, error in
-			if let error = error {
-				DispatchQueue.main.async {
-					completion(.failure(error))
-				}
-				return
-			}
-			
-			guard let data = data else {
-				let error = NSError(domain: "dataNilError", code: -100001, userInfo: nil)
-				DispatchQueue.main.async {
-					completion(.failure(error))
-				}
-				return
-			}
-			
+		let task = session.dataTask(with: urlRequest) { (data, response, error) in
+			guard error == nil else {
+				return }
+			guard let data = data else { return }
 			do {
-				let episodes = try JSONDecoder().decode(RickAndMortyResponse.self, from: data)
-				
-				let group = DispatchGroup()
-				var items = [Item]()
-				var errors = [Error]()
-				
-				for episode in episodes.results {
-					guard let characterURL = episode.characters.randomElement() else {
-						continue
-					}
-					
-					group.enter()
-					self.fetchCharacterImageURL(characterURL: characterURL) { result in
-						switch result {
-						case .success(let imageURL):
-							let model = Item(
-								episode: episode.episode,
-								imageName: imageURL,
-								name: episode.name
-							)
-							items.append(model)
-						case .failure(let error):
-							errors.append(error)
-						}
+				let response = try decoder.decode(RickAndMorty.self, from: data)
+				for episode in response.results {
+					guard let character = episode.characters.randomElement() else { return }
+					lock.lock()
+					self.fetchImageData(url: character) { character in
+						let model = self.createModel(episode: episode, character: character)
+						modelCharacters.append(model)
+						lock.unlock()
 						
-						group.leave()
 					}
 				}
-				
-				group.notify(queue: .main) {
-					if errors.isEmpty {
-						completion(.success(items))
-					} else {
-						let combinedError = NSError(domain: "fetchingError", code: -100004, userInfo: [NSLocalizedDescriptionKey: "One or more errors occurred while fetching character images."])
-						completion(.failure(combinedError))
-					}
-				}
-			} catch {
-				DispatchQueue.main.async {
-					completion(.failure(error))
-				}
+				completion(modelCharacters)
 			}
-		}.resume()
+			catch {
+				print(error.localizedDescription)
+			}
+		}
+		task.resume()
 	}
 	
-	func fetchCharacterImageURL(characterURL: String, completion: @escaping (Result<URL, Error>) -> Void) {
-		guard let url = URL(string: characterURL) else {
-			let error = NSError(domain: "invalidURLError", code: -100002, userInfo: nil)
-			completion(.failure(error))
-			return
-		}
+	func fetchImageData(url: URL, completion: @escaping (RickAndMorty.Character) -> Void) {
+		let urlRequest = URLRequest(url: url)
+		let session = URLSession(configuration: .default)
+		let decoder = JSONDecoder()
 		
-		URLSession.shared.dataTask(with: url) { data, response, error in
-			if let error = error {
-				completion(.failure(error))
-				return
-			}
-			
-			guard let data = data else {
-				let error = NSError(domain: "dataNilError", code: -100001, userInfo: nil)
-				completion(.failure(error))
-				return
-			}
-			
+		let task = session.dataTask(with: urlRequest) { (data, response, error) in
+			guard error == nil else {
+				return }
+			guard let data = data else { return }
 			do {
-				let character = try JSONDecoder().decode(RickAndMortyResponse.Character.self, from: data)
-				if let imageURL = URL(string: character.image) {
-					completion(.success(imageURL))
-				} else {
-					let error = NSError(domain: "invalidImageURLError", code: -100003, userInfo: nil)
-					completion(.failure(error))
-				}
-			} catch {
-				completion(.failure(error))
+				let response = try decoder.decode(RickAndMorty.Character.self, from: data)
+				completion(response)
 			}
-		}.resume()
+			catch {
+				print(error.localizedDescription)
+			}
+		}
+		task.resume()
+	}
+	
+	func createModel(episode: RickAndMorty.Episode, character: RickAndMorty.Character) -> EpisodeTest {
+		let model = EpisodeTest(
+			nameEpisode: episode.name,
+			imagePers: character.image,
+			numberEpisode: episode.episode,
+			namePers: character.name,
+			statusPers: character.status,
+			speciePers: character.species,
+			genderPers: character.gender,
+			originPers: character.origin.name
+		)
+		
+		return model
 	}
 }

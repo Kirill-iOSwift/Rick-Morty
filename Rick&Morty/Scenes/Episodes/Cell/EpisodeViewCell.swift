@@ -3,37 +3,36 @@
 //  Rick&Morty
 
 import UIKit
-import SwiftUI
 
-final class ItemCell: UICollectionViewCell {
+// MARK: - EpisideView Cell
+
+final class EpisideViewCell: UICollectionViewCell {
+	
+	// MARK: Properties
+	
 	static let reuseIdentifier = "ItemCell"
-
+	
 	private var imageView = UIImageView()
 	private let nameLabel = UILabel()
 	private let episodeLabel = UILabel()
+	private var image = UIImageView()
 	
-//	var addToFavoritesAction: (() -> Void)?
-
+	var button = UIButton(type: .system)
+	var like = false
+	
+	// MARK: Initialization
+	
 	override init(frame: CGRect) {
 		super.init(frame: frame)
 		setupCell()
 		setupViews()
 	}
-
+	
 	required init?(coder: NSCoder) {
 		fatalError("init(coder:) has not been implemented")
 	}
 	
-	private func setupCell() {
-		   contentView.backgroundColor = .white
-		   contentView.layer.cornerRadius = 12
-		   //contentView.layer.masksToBounds = false
-		   contentView.layer.shadowColor = UIColor.black.cgColor
-		   contentView.layer.shadowOffset = CGSize(width: 0, height: 1)
-		   contentView.layer.shadowRadius = 4
-		contentView.layer.shadowOpacity = 0.5
-		   
-	   }
+	// MARK: Methods
 	
 	override func prepareForReuse() {
 		super.prepareForReuse()
@@ -42,21 +41,37 @@ final class ItemCell: UICollectionViewCell {
 		episodeLabel.text = nil
 	}
 
+	private func setupCell() {
+		contentView.backgroundColor = .white
+		contentView.layer.cornerRadius = 12
+		contentView.layer.shadowColor = UIColor.black.cgColor
+		contentView.layer.shadowOffset = CGSize(width: 0, height: 1)
+		contentView.layer.shadowRadius = 4
+		contentView.layer.shadowOpacity = 0.5
+	}
+		
 	private func setupViews() {
 		imageView.translatesAutoresizingMaskIntoConstraints = false
-		
-		episodeLabel.text = "Episode"
-		nameLabel.text = "??????"
 		
 		contentView.addSubview(imageView)
 		
 		let labelCell = NameLabel(frame: .zero, nameLabel: nameLabel)
 		labelCell.translatesAutoresizingMaskIntoConstraints = false
 		contentView.addSubview(labelCell)
-	
-		let viewCell = BottomView(frame: .zero, label: episodeLabel)
+		
+		image.image = UIImage(systemName: "play.tv")
+		
+		button.setImage(UIImage(systemName: "heart.fill"), for: .normal)
+		button.imageView?.contentMode = .scaleToFill
+		
+		button.tintColor = .lightGray
+		button.addTarget(self, action: #selector(tap), for: .touchUpInside)
+		
+		let viewCell = BottomView(frame: .zero, label: episodeLabel, button: button, image: image)
 		viewCell.translatesAutoresizingMaskIntoConstraints = false
 		contentView.addSubview(viewCell)
+		
+		// MARK: Setup Constraints
 		
 		NSLayoutConstraint.activate([
 			imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -75,31 +90,19 @@ final class ItemCell: UICollectionViewCell {
 			viewCell.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
 		])
 	}
-
-//	@objc private func addToFavoritesTapped() {
-//		addToFavoritesAction?()
-//	}
-	func configure(with item: Item) {
-			nameLabel.text = item.name
-			episodeLabel.text = item.episode
-			if let imageURL = item.imageName {
-				imageView.setImage(from: imageURL)
-				//imageView.loadImage(from: imageURL)
-			} else {
-				imageView.image = nil
-			}
-		}
+	
+	@objc private func tap() {
+		button.tintColor = like ? .red : .lightGray
+		like.toggle()
+		
+	}
+	
+	// MARK: Configure
+	
+	func configure(with item: EpisodeTest){
+		nameLabel.text = item.nameEpisode
+		episodeLabel.text = item.numberEpisode
+		imageView.setImage(from: item.imagePers)
+	}
 }
-
-//struct ItemCellViewPreviews: PreviewProvider {
-//	struct ViewControllerContainer: UIViewControllerRepresentable {
-//		func makeUIViewController(context: Context) -> some UIViewController {
-//			UINavigationController(rootViewController: EpisodesViewController())
-//		}
-//		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
-//	}
-//	static var previews: some View {
-//		ViewControllerContainer().edgesIgnoringSafeArea(.all)
-//	}
-//}
 

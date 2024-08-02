@@ -4,8 +4,14 @@
 
 import UIKit
 
+// MARK: -NavigationTopView
+
 final class NavigationTopView: UIView {
-	let image = UIImageView()
+	
+	// MARK: Properties
+	
+	private let image = UIImageView()
+	
 	var buttot: UIButton
 	
 	init(frame: CGRect, buttot: UIButton) {
@@ -19,7 +25,9 @@ final class NavigationTopView: UIView {
 		fatalError("init(coder:) has not been implemented")
 	}
 	
-	func setupElement() {
+	// MARK: Setup SubViews
+	
+	private func setupElement() {
 		
 		self.backgroundColor = .white
 		
@@ -44,7 +52,9 @@ final class NavigationTopView: UIView {
 		
 	}
 	
-	func setupConstraints() {
+	// MARK: Setup Constraints
+	
+	private func setupConstraints() {
 		NSLayoutConstraint.activate([
 			buttot.centerYAnchor.constraint(equalTo: self.centerYAnchor),
 			buttot.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 10),

@@ -3,35 +3,51 @@
 //  Rick&Morty
 
 import Foundation
-import Combine
+
+// MARK: Protocol View Model
 
 protocol EpisodesViewModelProtocol: AnyObject {
-	func downLoad(complition: @escaping ([Item]) -> Void)
-	var items: [Item] { get }
+	func load(complition: @escaping ([EpisodeTest]) -> Void)
 }
+
+// MARK: Class
 
 class EpisodesViewModel: EpisodesViewModelProtocol {
 	
-	var items = [Item]()
+	// MARK: Properties
+	
+	var items = [EpisodeTest]()
+	
+	// MARK: Dependency
 	
 	weak var network: NetworkManagerProtocol?
+	
+	// MARK: Methods
+	
+	func load(complition: @escaping ([EpisodeTest]) -> Void) {
+		network?.fetchEpisodeData { models in
+			complition(models)
+		}
+	}
+	
+	// MARK: Initialization
 	
 	init(network: NetworkManagerProtocol) {
 		self.network = network
 	}
+
+	// TODO: - Получение избранного
 	
-	
-	func downLoad(complition: @escaping ([Item]) -> Void) {
-		network?.fetchEpisodes { [weak self] result in
-			switch result {
-					
-				case .success(let items):
-					self?.items = items
-					complition(items)
-				case .failure(let error):
-					print("Error fetching episodes: \(error)")
-			}
+	func toggleFavorite(for item: EpisodeTest) {
+		print("!!!!")
+		if !items.contains(where: { $0.id == item.id }) {
+			print("!!!!")
+			items.append(item)
+		} else {
+			guard let index = items.firstIndex(where: { $0.id == item.id }) else { return }
+			print("!!!!")
+			items.remove(at: index)
 		}
 	}
-
 }
+

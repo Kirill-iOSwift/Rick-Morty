@@ -3,66 +3,81 @@
 //  Rick&Morty
 
 import UIKit
-import SwiftUI
+
+// MARK: - Favourites Episode ViewController
 
 class FavouriteEpisodeViewController: UIViewController {
 	
-	var items: [Item] = [
-		Item(episode: "sdfsdfsdf", imageName: nil, name: "sdfsdfsd"),
-		Item(episode: "sdfsdfsdf", imageName: nil, name: "sdfsdfsd"),
-		Item(episode: "sdfsdfsdf", imageName: nil, name: "sdfsdfsd"),
-		Item(episode: "sdfsdfsdf", imageName: nil, name: "sdfsdfsd")
-	]
+	// MARK: Enum Section
 	
-	let titleView = UIView()
+	enum Section {
+		case main
+	}
 	
-	var collectionView: UICollectionView!
-	var dataSource: UICollectionViewDiffableDataSource<Int, Item>!
+	// MARK: Private properties
+
+	private let titleView = UIView()
+	private let titleLabel = UILabel()
+	private var collectionView: UICollectionView!
+	private var dataSource: UICollectionViewDiffableDataSource<Section, EpisodeTest>!
 	
+	// MARK: Dependency
+	
+	weak var viewModel: EpisodesViewModelProtocol?
+	
+	// MARK: Initialization
+
+	init(viewModel: EpisodesViewModelProtocol) {
+		self.viewModel = viewModel
+		super.init(nibName: nil, bundle: nil)
+	}
+	
+	required init?(coder: NSCoder) {
+		fatalError("init(coder:) has not been implemented")
+	}
+	
+	// MARK: Life Cycle
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		view.backgroundColor = .systemGray5
 		
-		setupTitle()
+		setupNAvigationTitleView()
 		setupCollectionView()
-		setupDataSource()
-		fetchData()
+		setupLayout()
 	}
 	
-	private func setupTitle() {
-		let titleLabel = UILabel()
+	// MARK: - Private Meathods
+	
+	// MARK: Setup UI
+	
+	private func setupNAvigationTitleView() {
+		
 		titleLabel.text = "Favourites Episodes"
 		titleLabel.textColor = .black
 		titleLabel.font = UIFont.boldSystemFont(ofSize: 24)
 		titleLabel.sizeToFit()
 		
-		//let titleView = UIView()
 		titleLabel.translatesAutoresizingMaskIntoConstraints = false
 		titleView.translatesAutoresizingMaskIntoConstraints = false
 		
 		titleView.addSubview(titleLabel)
 		self.view.addSubview(titleView)
-		//titleView.backgroundColor = #colorLiteral(red: 0.9044648409, green: 0.9204814434, blue: 0.9278460145, alpha: 1)
 		
 		self.navigationItem.titleView = titleView
-		NSLayoutConstraint.activate([
-			titleView.topAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.topAnchor),
-			titleView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
-			titleView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor),
-			titleView.heightAnchor.constraint(equalToConstant: 60),
-			
-			titleLabel.centerXAnchor.constraint(equalTo: titleView.centerXAnchor),
-			titleLabel.centerYAnchor.constraint(equalTo: titleView.centerYAnchor),
-			
-			 // Ограничение ширины
-		])
 		
-		// Установка кастомного заголовка в навигационную панель
 	}
 }
 
-extension FavouriteEpisodeViewController {
+// MARK: - Setup VollectionView
+
+private extension FavouriteEpisodeViewController {
+	
+	func setupCollectionView() {
+		addCollectionView(layout: createLayout())
+		setupDataSource()
+		fetchData()
+	}
 	
 	func createLayout() -> UICollectionViewLayout {
 		
@@ -97,66 +112,57 @@ extension FavouriteEpisodeViewController {
 		return layout
 	}
 	
-	func setupCollectionView() {
+	func addCollectionView(layout: UICollectionViewLayout) {
 		
 		let layout = createLayout()
 		
 		collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
-		collectionView.register(ItemCell.self, forCellWithReuseIdentifier: ItemCell.reuseIdentifier)
+		collectionView.register(EpisideViewCell.self, forCellWithReuseIdentifier: EpisideViewCell.reuseIdentifier)
 		collectionView.translatesAutoresizingMaskIntoConstraints = false
 		collectionView.backgroundColor = .systemGray6
 		
 		view.addSubview(collectionView)
-		
-		NSLayoutConstraint.activate([
-			collectionView.topAnchor.constraint(equalTo: self.titleView.bottomAnchor),
-			collectionView.bottomAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.bottomAnchor),
-			collectionView.leadingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.leadingAnchor),
-			collectionView.trailingAnchor.constraint(equalTo: self.view.safeAreaLayoutGuide.trailingAnchor)
-		])
 	}
 	
 	func setupDataSource() {
-		dataSource = UICollectionViewDiffableDataSource<Int, Item>(
+		dataSource = UICollectionViewDiffableDataSource<Section, EpisodeTest>(
 			collectionView: collectionView
 		) { (collectionView, indexPath, item) -> UICollectionViewCell? in
 			
 			guard let cell = collectionView.dequeueReusableCell(
-				withReuseIdentifier: ItemCell.reuseIdentifier,
+				withReuseIdentifier: EpisideViewCell.reuseIdentifier,
 				for: indexPath
-			) as? ItemCell else { return UICollectionViewCell() }
+			) as? EpisideViewCell else { return UICollectionViewCell() }
 			cell.configure(with: item)
-			//			cell.addToFavoritesAction = {
-			//				FavoritesManager.shared.add(item: item)
-			//			}
 			return cell
 		}
 	}
 	
 	func fetchData() {
-		// Получение данных с сервера и обновление коллекции
-		// Пример:
-		// self.items = fetchedItems
-		
-		
-		
-		var snapshot = NSDiffableDataSourceSnapshot<Int, Item>()
-		snapshot.appendSections([0])
-		snapshot.appendItems(items)
+		var snapshot = NSDiffableDataSourceSnapshot<Section, EpisodeTest>()
+		snapshot.appendSections([.main])
+		snapshot.appendItems([])
 		dataSource?.apply(snapshot, animatingDifferences: true)
 	}
 }
 
-
-// MARK: - Preview
-struct FavouriteEpisodeViewPreviews: PreviewProvider {
-	struct ViewControllerContainer: UIViewControllerRepresentable {
-		func makeUIViewController(context: Context) -> some UIViewController {
-			UINavigationController(rootViewController: FavouriteEpisodeViewController())
-		}
-		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
-	}
-	static var previews: some View {
-		ViewControllerContainer().edgesIgnoringSafeArea(.all)
+// MARK: Setup Costraints
+ 
+private extension FavouriteEpisodeViewController {
+	func setupLayout() {
+		NSLayoutConstraint.activate([
+			titleView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+			titleView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+			titleView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+			titleView.heightAnchor.constraint(equalToConstant: 60),
+			
+			titleLabel.centerXAnchor.constraint(equalTo: titleView.centerXAnchor),
+			titleLabel.centerYAnchor.constraint(equalTo: titleView.centerYAnchor),
+			
+			collectionView.topAnchor.constraint(equalTo: titleView.bottomAnchor),
+			collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+			collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+			collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
+		])
 	}
 }

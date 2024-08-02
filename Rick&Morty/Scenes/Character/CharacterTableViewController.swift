@@ -2,15 +2,17 @@
 //  CharacterTableViewController.swift
 
 import UIKit
-import SwiftUI
 
-
+//MARK: - Character Table ViewController
 
 final class CharacterTableViewController: UIViewController {
 	
+	// MARK: Properties
+	
+	//TODO: Исправить
 	var item: EpisodeTest?
 	
-	let tableView = UITableView(frame: .zero, style: .insetGrouped)
+	private let tableView = UITableView(frame: .zero, style: .insetGrouped)
 		
 	private let imageCharacterView = UIImageView()
 	private let buttonPhoto = UIButton()
@@ -19,6 +21,8 @@ final class CharacterTableViewController: UIViewController {
 	private let backButton = UIButton(type: .system)
 	
 	private let titles = ["Gender", "Status", "Specie", "Oridin"]
+	
+	// MARK: Life Cycle
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -30,7 +34,9 @@ final class CharacterTableViewController: UIViewController {
 		
 	}
 	
-	func setupTopView() {
+	// MARK: Methods
+	
+	private func setupTopView() {
 		
 		let topView = NavigationTopView(frame: .zero, buttot: backButton)
 		topView.translatesAutoresizingMaskIntoConstraints = false
@@ -50,12 +56,12 @@ final class CharacterTableViewController: UIViewController {
 		
 	}
 	
-	@objc func back() {
+	@objc private func back() {
 		print("!!!!")
 		navigationController?.popViewController(animated: true)
 	}
 	
-	func setupTable() {
+	private func setupTable() {
 		tableView.translatesAutoresizingMaskIntoConstraints = false
 		self.view.addSubview(tableView)
 		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
@@ -63,16 +69,9 @@ final class CharacterTableViewController: UIViewController {
 		tableView.delegate = self
 		tableView.backgroundColor = .white
 		tableView.isScrollEnabled = false
-		
-//		NSLayoutConstraint.activate([
-//			tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-//			tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-//			tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-//			tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-//		])
 	}
 	
-	func setHeader() -> UIView {
+	private func setHeader() -> UIView {
 		
 		let header = HeaderView(
 			frame: .zero,
@@ -89,17 +88,15 @@ final class CharacterTableViewController: UIViewController {
 	}
 	
 }
-    // MARK: - Table view data source
+    // MARK: - Tableview DataSource / Delegate
 
 extension CharacterTableViewController: UITableViewDelegate, UITableViewDataSource {
 	
 	func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
 		setHeader()
-		
 	}
 
 	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        // #warning Incomplete implementation, return the number of rows
 		titles.count
     }
 	
@@ -108,24 +105,9 @@ extension CharacterTableViewController: UITableViewDelegate, UITableViewDataSour
 		var content = cell.defaultContentConfiguration()
 		cell.selectionStyle = .none
 		content.text = titles[indexPath.row]
+		//TODO: Исправить
 		content.secondaryText = item?.genderPers
 		cell.contentConfiguration = content
-		
-		
 		return cell
-	}
-}
-
-// MARK: - Preview
-
-struct CharacterViewPreviews: PreviewProvider {
-	struct ViewControllerContainer: UIViewControllerRepresentable {
-		func makeUIViewController(context: Context) -> some UIViewController {
-			UINavigationController(rootViewController: CharacterTableViewController())
-		}
-		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
-	}
-	static var previews: some View {
-		ViewControllerContainer().edgesIgnoringSafeArea(.all)
 	}
 }
