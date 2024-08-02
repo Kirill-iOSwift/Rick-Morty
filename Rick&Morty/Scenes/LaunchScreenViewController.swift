@@ -25,7 +25,6 @@ final class LaunchScreenViewController: UIViewController {
 		setupElements()
 		setupLayout()
 		rotationPortal()
-		
 	}
 	
 	override func viewWillDisappear(_ animated: Bool) {

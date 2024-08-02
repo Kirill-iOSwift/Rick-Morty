@@ -94,12 +94,11 @@ final class EpisideViewCell: UICollectionViewCell {
 	@objc private func tap() {
 		button.tintColor = like ? .red : .lightGray
 		like.toggle()
-		
 	}
 	
 	// MARK: Configure
 	
-	func configure(with item: EpisodeTest){
+	func configure(with item: Episode){
 		nameLabel.text = item.nameEpisode
 		episodeLabel.text = item.numberEpisode
 		imageView.setImage(from: item.imagePers)

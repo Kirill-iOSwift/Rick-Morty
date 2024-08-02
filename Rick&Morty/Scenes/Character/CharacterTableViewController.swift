@@ -10,7 +10,7 @@ final class CharacterTableViewController: UIViewController {
 	// MARK: Properties
 	
 	//TODO: Исправить
-	var item: EpisodeTest?
+	var item: Episode?
 	
 	private let tableView = UITableView(frame: .zero, style: .insetGrouped)
 		
@@ -31,7 +31,6 @@ final class CharacterTableViewController: UIViewController {
 		backButton.addTarget(self, action: #selector(back), for: .touchUpInside)
 		setupTable()
 		setupTopView()
-		
 	}
 	
 	// MARK: Methods
@@ -53,7 +52,6 @@ final class CharacterTableViewController: UIViewController {
 			tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
 			tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
 		])
-		
 	}
 	
 	@objc private func back() {

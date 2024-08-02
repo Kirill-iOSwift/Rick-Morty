@@ -34,7 +34,7 @@ class MainCoordinator: CoordinatorProtocol {
 	
 	private func setStartViewController() -> UIViewController {
 		let tabbarController = UITabBarController()
-		let network = NetworkTest()
+		let network = NetworkManager()
 		let viewModel = EpisodesViewModel(network: network)
 		let episodes = EpisodesViewController(viewModel: viewModel)
 		let favourites = FavouriteEpisodeViewController(viewModel: viewModel)

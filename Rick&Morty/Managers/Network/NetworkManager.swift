@@ -15,36 +15,23 @@ fileprivate enum UrlRickAndMoarty: String {
 // MARK: - Protocol
 
 protocol NetworkManagerProtocol: AnyObject {
-	func fetchEpisodeData(completion: @escaping ([EpisodeTest]) -> Void)
+	func fetchEpisodeData(completion: @escaping ([Episode]) -> Void)
 }
 
 // MARK: - Class
 
-struct EpisodeTest: Hashable {
-	let id = UUID()
-	let nameEpisode: String
-	let imagePers: URL
-	let numberEpisode: String
+final class NetworkManager: NetworkManagerProtocol {
 	
-	let namePers: String
-	let statusPers: String
-	let speciePers: String
-	let genderPers: String
-	let originPers: String
-}
-
-final class NetworkTest: NetworkManagerProtocol {
-	
-	func fetchEpisodeData(completion: @escaping ([EpisodeTest]) -> Void) {
+	func fetchEpisodeData(completion: @escaping ([Episode]) -> Void) {
 		guard let url = URL(string: UrlRickAndMoarty.url.rawValue) else { return }
 		let urlRequest = URLRequest(url: url)
 		let session = URLSession(configuration: .default)
 		let decoder = JSONDecoder()
 		let lock = NSLock()
 				
-		var modelCharacters = [EpisodeTest]()
+		var modelCharacters = [Episode]()
 		
-		let task = session.dataTask(with: urlRequest) { (data, response, error) in
+		let task = session.dataTask(with: urlRequest) { [weak self] (data, response, error) in
 			guard error == nil else {
 				return }
 			guard let data = data else { return }
@@ -53,9 +40,10 @@ final class NetworkTest: NetworkManagerProtocol {
 				for episode in response.results {
 					guard let character = episode.characters.randomElement() else { return }
 					lock.lock()
-					self.fetchImageData(url: character) { character in
-						let model = self.createModel(episode: episode, character: character)
-						modelCharacters.append(model)
+					self?.fetchImageData(url: character) { [weak self] character in
+						if let model = self?.createModel(episode: episode, character: character) {
+							modelCharacters.append(model)
+						}
 						lock.unlock()
 						
 					}
@@ -69,7 +57,7 @@ final class NetworkTest: NetworkManagerProtocol {
 		task.resume()
 	}
 	
-	func fetchImageData(url: URL, completion: @escaping (RickAndMorty.Character) -> Void) {
+	private func fetchImageData(url: URL, completion: @escaping (RickAndMorty.Character) -> Void) {
 		let urlRequest = URLRequest(url: url)
 		let session = URLSession(configuration: .default)
 		let decoder = JSONDecoder()
@@ -89,8 +77,8 @@ final class NetworkTest: NetworkManagerProtocol {
 		task.resume()
 	}
 	
-	func createModel(episode: RickAndMorty.Episode, character: RickAndMorty.Character) -> EpisodeTest {
-		let model = EpisodeTest(
+	private func createModel(episode: RickAndMorty.Episode, character: RickAndMorty.Character) -> Episode {
+		let model = Episode(
 			nameEpisode: episode.name,
 			imagePers: character.image,
 			numberEpisode: episode.episode,

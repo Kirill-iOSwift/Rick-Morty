@@ -18,13 +18,13 @@ enum NetworkError: Error {
 	var localizedDescription: String {
 		switch self {
 			case .invalidURL:
-				return "The provided character URL is invalid."
+				return "URL is invalid."
 			case .networkError(let error):
 				return error.localizedDescription
 			case .noData:
-				return "No data was received from the server."
+				return "No data"
 			case .decodingError(let error):
-				return "Failed to decode the character data: \(error.localizedDescription)"
+				return "Failed to decode: \(error.localizedDescription)"
 			case .invalidImageURL:
 				return "The image URL is invalid."
 		}

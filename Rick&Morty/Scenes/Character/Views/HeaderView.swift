@@ -34,7 +34,6 @@ final class HeaderView: UIView {
 		super.init(frame: frame)
 		setupElements()
 		setupConstraints()
-		
 	}
 	
 	required init?(coder: NSCoder) {
@@ -47,7 +46,6 @@ final class HeaderView: UIView {
 		super.layoutSubviews()
 		imageCharacterView.layer.masksToBounds = true
 		imageCharacterView.layer.cornerRadius = imageCharacterView.frame.width / 2
-		
 	}
 	
 	private func setupElements() {
