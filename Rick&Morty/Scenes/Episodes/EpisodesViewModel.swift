@@ -7,7 +7,7 @@ import Foundation
 // MARK: Protocol View Model
 
 protocol EpisodesViewModelProtocol: AnyObject {
-	func load(complition: @escaping ([EpisodeTest]) -> Void)
+	func load(complition: @escaping ([Episode]) -> Void)
 }
 
 // MARK: Class
@@ -16,7 +16,7 @@ class EpisodesViewModel: EpisodesViewModelProtocol {
 	
 	// MARK: Properties
 	
-	var items = [EpisodeTest]()
+	var items = [Episode]()
 	
 	// MARK: Dependency
 	
@@ -24,7 +24,7 @@ class EpisodesViewModel: EpisodesViewModelProtocol {
 	
 	// MARK: Methods
 	
-	func load(complition: @escaping ([EpisodeTest]) -> Void) {
+	func load(complition: @escaping ([Episode]) -> Void) {
 		network?.fetchEpisodeData { models in
 			complition(models)
 		}
@@ -38,7 +38,7 @@ class EpisodesViewModel: EpisodesViewModelProtocol {
 
 	// TODO: - Получение избранного
 	
-	func toggleFavorite(for item: EpisodeTest) {
+	func toggleFavorite(for item: Episode) {
 		print("!!!!")
 		if !items.contains(where: { $0.id == item.id }) {
 			print("!!!!")

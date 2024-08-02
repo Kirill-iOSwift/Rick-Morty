@@ -19,7 +19,7 @@ class FavouriteEpisodeViewController: UIViewController {
 	private let titleView = UIView()
 	private let titleLabel = UILabel()
 	private var collectionView: UICollectionView!
-	private var dataSource: UICollectionViewDiffableDataSource<Section, EpisodeTest>!
+	private var dataSource: UICollectionViewDiffableDataSource<Section, Episode>!
 	
 	// MARK: Dependency
 	
@@ -65,7 +65,6 @@ class FavouriteEpisodeViewController: UIViewController {
 		self.view.addSubview(titleView)
 		
 		self.navigationItem.titleView = titleView
-		
 	}
 }
 
@@ -97,7 +96,6 @@ private extension FavouriteEpisodeViewController {
 			subitems: [item]
 		)
 		
-		
 		let section = NSCollectionLayoutSection(group: group)
 		
 		section.interGroupSpacing = 30
@@ -125,7 +123,7 @@ private extension FavouriteEpisodeViewController {
 	}
 	
 	func setupDataSource() {
-		dataSource = UICollectionViewDiffableDataSource<Section, EpisodeTest>(
+		dataSource = UICollectionViewDiffableDataSource<Section, Episode>(
 			collectionView: collectionView
 		) { (collectionView, indexPath, item) -> UICollectionViewCell? in
 			
@@ -139,7 +137,7 @@ private extension FavouriteEpisodeViewController {
 	}
 	
 	func fetchData() {
-		var snapshot = NSDiffableDataSourceSnapshot<Section, EpisodeTest>()
+		var snapshot = NSDiffableDataSourceSnapshot<Section, Episode>()
 		snapshot.appendSections([.main])
 		snapshot.appendItems([])
 		dataSource?.apply(snapshot, animatingDifferences: true)

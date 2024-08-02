@@ -9,6 +9,7 @@ import UIKit
 final class EpisodesViewController: UIViewController {
 	
 	// MARK: Enum Section
+	
 	private enum Section {
 		case main
 	}
@@ -19,7 +20,7 @@ final class EpisodesViewController: UIViewController {
 	private let logoImageView = UIImageView()
 	private let buttonSort = UIButton(type: .system)
 	private var collectionView: UICollectionView!
-	private var dataSource: UICollectionViewDiffableDataSource<Section, EpisodeTest>!
+	private var dataSource: UICollectionViewDiffableDataSource<Section, Episode>!
 	
 	// MARK: Dependency
 	
@@ -74,7 +75,6 @@ final class EpisodesViewController: UIViewController {
 	@objc func sortItems() {
 		//TODO: Сделать сортировку
 	}
-	
 }
 
 // MARK: - Setup SearchBar
@@ -164,7 +164,7 @@ extension EpisodesViewController: UICollectionViewDelegate {
 	}
 	
 	func setupDataSource() {
-		dataSource = UICollectionViewDiffableDataSource<Section, EpisodeTest>(
+		dataSource = UICollectionViewDiffableDataSource<Section, Episode>(
 			collectionView: collectionView
 		) { (collectionView, indexPath, item) -> UICollectionViewCell? in
 			
@@ -177,8 +177,8 @@ extension EpisodesViewController: UICollectionViewDelegate {
 		}
 	}
 	
-	func fetchData(items: [EpisodeTest]) {
-		var snapshot = NSDiffableDataSourceSnapshot<Section, EpisodeTest>()
+	func fetchData(items: [Episode]) {
+		var snapshot = NSDiffableDataSourceSnapshot<Section, Episode>()
 		snapshot.appendSections([.main])
 		snapshot.appendItems(items)
 		dataSource.apply(snapshot, animatingDifferences: true)
@@ -191,10 +191,9 @@ extension EpisodesViewController: UICollectionViewDelegate {
 		charVC.item = item
 		navigationController?.pushViewController(charVC, animated: true)
 	}
-	
 }
 
-// MARK: - Setup Costraints
+// MARK: - Setup Constraints
 
 private extension EpisodesViewController {
 	func setupLayout() {

@@ -49,7 +49,6 @@ final class NavigationTopView: UIView {
 			$0.translatesAutoresizingMaskIntoConstraints = false
 			addSubview($0)
 		}
-		
 	}
 	
 	// MARK: Setup Constraints
