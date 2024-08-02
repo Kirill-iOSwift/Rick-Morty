@@ -20,20 +20,7 @@ protocol NetworkManagerProtocol: AnyObject {
 
 // MARK: - Class
 
-struct EpisodeTest: Hashable {
-	let id = UUID()
-	let nameEpisode: String
-	let imagePers: URL
-	let numberEpisode: String
-	
-	let namePers: String
-	let statusPers: String
-	let speciePers: String
-	let genderPers: String
-	let originPers: String
-}
-
-final class NetworkTest: NetworkManagerProtocol {
+final class NetworkManager: NetworkManagerProtocol {
 	
 	func fetchEpisodeData(completion: @escaping ([EpisodeTest]) -> Void) {
 		guard let url = URL(string: UrlRickAndMoarty.url.rawValue) else { return }
