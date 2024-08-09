@@ -4,18 +4,16 @@
 
 import UIKit
 
-// MARK: - Favourites Episode ViewController
-
-class FavouriteEpisodeViewController: UIViewController {
+final class FavouriteEpisodeViewController: UIViewController {
 	
 	// MARK: Enum Section
 	
-	enum Section {
+	enum Section: Hashable {
 		case main
 	}
 	
 	// MARK: Private properties
-
+	
 	private let titleView = UIView()
 	private let titleLabel = UILabel()
 	private var collectionView: UICollectionView!
@@ -23,13 +21,12 @@ class FavouriteEpisodeViewController: UIViewController {
 	
 	// MARK: Dependency
 	
-	weak var viewModel: EpisodesViewModelProtocol?
+	 var viewModel: EpisodesViewModelProtocol?
 	
-	// MARK: Initialization
-
 	init(viewModel: EpisodesViewModelProtocol) {
 		self.viewModel = viewModel
 		super.init(nibName: nil, bundle: nil)
+		
 	}
 	
 	required init?(coder: NSCoder) {
@@ -41,10 +38,14 @@ class FavouriteEpisodeViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		view.backgroundColor = .systemGray5
-		
 		setupNAvigationTitleView()
 		setupCollectionView()
 		setupLayout()
+	}
+	
+	override func viewWillAppear(_ animated: Bool) {
+		super.viewWillAppear(animated)
+		fetchData()
 	}
 	
 	// MARK: - Private Meathods
@@ -72,13 +73,13 @@ class FavouriteEpisodeViewController: UIViewController {
 
 private extension FavouriteEpisodeViewController {
 	
-	func setupCollectionView() {
+	private func setupCollectionView() {
 		addCollectionView(layout: createLayout())
 		setupDataSource()
 		fetchData()
 	}
 	
-	func createLayout() -> UICollectionViewLayout {
+	private func createLayout() -> UICollectionViewLayout {
 		
 		let itemSize = NSCollectionLayoutSize(
 			widthDimension: .fractionalWidth(1),
@@ -86,6 +87,7 @@ private extension FavouriteEpisodeViewController {
 		)
 		
 		let item = NSCollectionLayoutItem(layoutSize: itemSize)
+		
 		
 		let groupSize = NSCollectionLayoutSize(
 			widthDimension: .fractionalWidth(1),
@@ -97,7 +99,6 @@ private extension FavouriteEpisodeViewController {
 		)
 		
 		let section = NSCollectionLayoutSection(group: group)
-		
 		section.interGroupSpacing = 30
 		section.contentInsets = NSDirectionalEdgeInsets(
 			top: 10,
@@ -110,36 +111,43 @@ private extension FavouriteEpisodeViewController {
 		return layout
 	}
 	
-	func addCollectionView(layout: UICollectionViewLayout) {
+	private func addCollectionView(layout: UICollectionViewLayout) {
 		
 		let layout = createLayout()
 		
 		collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
-		collectionView.register(EpisideViewCell.self, forCellWithReuseIdentifier: EpisideViewCell.reuseIdentifier)
+		collectionView.register(EpisodeViewCell.self, forCellWithReuseIdentifier: EpisodeViewCell.reuseIdentifier)
 		collectionView.translatesAutoresizingMaskIntoConstraints = false
 		collectionView.backgroundColor = .systemGray6
 		
 		view.addSubview(collectionView)
 	}
 	
-	func setupDataSource() {
+	private func setupDataSource() {
 		dataSource = UICollectionViewDiffableDataSource<Section, Episode>(
 			collectionView: collectionView
 		) { (collectionView, indexPath, item) -> UICollectionViewCell? in
 			
 			guard let cell = collectionView.dequeueReusableCell(
-				withReuseIdentifier: EpisideViewCell.reuseIdentifier,
+				withReuseIdentifier: EpisodeViewCell.reuseIdentifier,
 				for: indexPath
-			) as? EpisideViewCell else { return UICollectionViewCell() }
+			) as? EpisodeViewCell else { return UICollectionViewCell() }
 			cell.configure(with: item)
+			cell.onFavouriteToggle = { [weak self] in
+				self?.viewModel?.toggleFavorite(for: item)
+				self?.fetchData()
+			}
+			
 			return cell
 		}
 	}
 	
-	func fetchData() {
+	private func fetchData() {
+		guard let viewModel = viewModel else { return }
+		let items = viewModel.episodes.filter { $0.isFavourite }
 		var snapshot = NSDiffableDataSourceSnapshot<Section, Episode>()
 		snapshot.appendSections([.main])
-		snapshot.appendItems([])
+		snapshot.appendItems(items)
 		dataSource?.apply(snapshot, animatingDifferences: true)
 	}
 }

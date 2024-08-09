@@ -3,44 +3,75 @@
 
 import UIKit
 
-//MARK: - Character Table ViewController
-
 final class CharacterTableViewController: UIViewController {
 	
 	// MARK: Properties
 	
-	//TODO: Исправить
-	var item: Episode?
-	
+	private let imageCharacter = UIImageView()
 	private let tableView = UITableView(frame: .zero, style: .insetGrouped)
-		
-	private let imageCharacterView = UIImageView()
-	private let buttonPhoto = UIButton()
-	private let nameCharacterLabel = UILabel()
-	private let infoLabel = UILabel()
-	private let backButton = UIButton(type: .system)
+	private var dataSource: UITableViewDiffableDataSource<Sections, Сharacteristics>?
+	private lazy var topView = NavigationTopView(frame: .zero, goBack: { [weak self] in
+		self?.back()
+	})
 	
-	private let titles = ["Gender", "Status", "Specie", "Oridin"]
+	var viewModel: CharacterTableViewModelProtocol?
 	
 	// MARK: Life Cycle
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		view.backgroundColor = .white
-		backButton.setTitle("Back", for: .normal)
-		backButton.addTarget(self, action: #selector(back), for: .touchUpInside)
-		setupTable()
-		setupTopView()
+		
+		setupElements()
+		setupContraints()
+		tableDataSourse(tableView: tableView)
 	}
-	
+
 	// MARK: Methods
 	
-	private func setupTopView() {
+	private func tableDataSourse(tableView: UITableView) {
+		configureDataSourse(tableView: tableView)
+		updateSnapshot()
+	}
+	
+	private func setupElements() {
 		
-		let topView = NavigationTopView(frame: .zero, buttot: backButton)
-		topView.translatesAutoresizingMaskIntoConstraints = false
-		self.view.addSubview(topView)
+		[topView, tableView].forEach {
+			$0.translatesAutoresizingMaskIntoConstraints = false
+			self.view.addSubview($0)
+		}
 		
+		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
+		tableView.delegate = self
+		tableView.backgroundColor = .white
+		tableView.isScrollEnabled = false
+	}
+	
+	private func setupHeader() -> UIView? {
+		guard let pers = viewModel?.character else { return nil }
+		let header = HeaderView(
+			frame: .zero,
+			nameCharacter: pers.namePers,
+			imageUrl: pers.imagePers, imageCharacterView: imageCharacter
+		)
+		header.bottonPhotoTapped = { [weak self] in
+			self?.showAler()
+		}
+		return header
+	}
+	
+	private func showAler() {
+		let alert = UIAlertController(
+			title: "Загрузите изображение",
+			message: nil,
+			preferredStyle: .actionSheet
+		)
+
+		alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+		self.present(alert, animated: true)
+	}
+	
+	private func setupContraints() {
 		NSLayoutConstraint.activate([
 			
 			topView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -54,58 +85,51 @@ final class CharacterTableViewController: UIViewController {
 		])
 	}
 	
-	@objc private func back() {
-		print("!!!!")
-		navigationController?.popViewController(animated: true)
+	private func back() {
+		viewModel?.goBack()
 	}
-	
-	private func setupTable() {
-		tableView.translatesAutoresizingMaskIntoConstraints = false
-		self.view.addSubview(tableView)
-		tableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-		tableView.dataSource = self
-		tableView.delegate = self
-		tableView.backgroundColor = .white
-		tableView.isScrollEnabled = false
-	}
-	
-	private func setHeader() -> UIView {
-		
-		let header = HeaderView(
-			frame: .zero,
-			imageCharacterView: imageCharacterView,
-			buttonPhoto: buttonPhoto,
-			nameCharacterLabel: nameCharacterLabel,
-			infoLabel: infoLabel
-		)
-		return header
-	}
-	
-	deinit {
-		print("deinit CharacterTable")
-	}
-	
 }
-    // MARK: - Tableview DataSource / Delegate
+// MARK: - Tableview DataSource / Delegate
 
-extension CharacterTableViewController: UITableViewDelegate, UITableViewDataSource {
-	
+extension CharacterTableViewController: UITableViewDelegate {
 	func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-		setHeader()
+		setupHeader()
 	}
-
-	func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-		titles.count
-    }
 	
-	func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-		let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-		var content = cell.defaultContentConfiguration()
-		cell.selectionStyle = .none
-		content.text = titles[indexPath.row]
-		//TODO: Исправить
-		content.secondaryText = item?.genderPers
-		cell.contentConfiguration = content
-		return cell
+	private func configureDataSourse(tableView: UITableView) {
+		guard let character = viewModel?.character else { return }
+		
+		dataSource = UITableViewDiffableDataSource<Sections, Сharacteristics>(tableView: tableView) {
+			(tableView, indexPath, item) -> UITableViewCell? in
+			let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+			var content = cell.defaultContentConfiguration()
+			content.secondaryTextProperties.font = .boldSystemFont(ofSize: 20)
+			switch item {
+				case .gender:
+					content.text = "Gender"
+					content.secondaryText = character.genderPers
+				case .origin:
+					content.text = "Origin"
+					content.secondaryText = character.statusPers
+				case .specie:
+					content.text = "Specie"
+					content.secondaryText = character.speciePers
+				case .status:
+					content.text = "Status"
+					content.secondaryText = character.originPers
+			}
+			
+			cell.contentConfiguration = content
+			return cell
+		}
+	}
+	
+	private func updateSnapshot() {
+		guard let info = viewModel?.getSectionInfo() else { return }
+		var snapshot = NSDiffableDataSourceSnapshot<Sections, Сharacteristics>()
+		snapshot.appendSections([.main])
+		
+		snapshot.appendItems(info)
+		dataSource?.apply(snapshot, animatingDifferences: true)
 	}
 }

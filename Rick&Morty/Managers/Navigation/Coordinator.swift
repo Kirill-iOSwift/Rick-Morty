@@ -2,23 +2,20 @@
 //  Coordinator.swift
 //  Rick&Morty
 
-
 import UIKit
-
-// MARK: - Coordinator
 
 // MARK: Protocol
 
-protocol CoordinatorProtocol {
+protocol CoordinatorProtocol: AnyObject {
 	var navigationController: UINavigationController { get }
 	func startMain()
-	func startNext()
-	func startBack()
+	func openScreen(viewController: UIViewController) 
+	func navigateBack()
 }
 
 // MARK: Class
 
-class MainCoordinator: CoordinatorProtocol {
+final class MainCoordinator: CoordinatorProtocol {
 	
 	// MARK: Properties
 	
@@ -28,47 +25,41 @@ class MainCoordinator: CoordinatorProtocol {
 	
 	init(navigationController: UINavigationController) {
 		self.navigationController = navigationController
+		print("init coordin")
 	}
 	
 	// MARK: Methods
 	
 	private func setStartViewController() -> UIViewController {
-		let tabbarController = UITabBarController()
-		let network = NetworkManager()
-		let viewModel = EpisodesViewModel(network: network)
+		let viewModel = EpisodesViewModel()
+		viewModel.coordinator = self
 		let episodes = EpisodesViewController(viewModel: viewModel)
 		let favourites = FavouriteEpisodeViewController(viewModel: viewModel)
-		tabbarController.viewControllers = [episodes, favourites]
-		
-		episodes.tabBarItem = UITabBarItem(
-			title: "Episode",
-			image: UIImage(systemName: "house"),
-			selectedImage: UIImage(systemName: "house.fill")
-		)
-		
-		favourites.tabBarItem = UITabBarItem(
-			title: "Favourites",
-			image: UIImage(systemName: "heart"),
-			selectedImage: UIImage(systemName: "heart.fill")
-		)
-		
-		tabbarController.tabBar.backgroundColor = .systemGray6
-		
+		let tabbarController = TabbarViewController(episodes: episodes, favourites: favourites)
 		return tabbarController
 	}
 	
 	func startMain() {
 		let mainViewController = LaunchScreenViewController()
-		mainViewController.coordinator = self
 		navigationController.pushViewController(mainViewController, animated: true)
+		DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+			self.startNext()
+		}
 	}
 	
-	func startNext() {
+	private func startNext() {
+		var viewControllers = navigationController.viewControllers
+		viewControllers.removeAll { $0 is LaunchScreenViewController }
 		let episodeViewController = setStartViewController()
-		navigationController.pushViewController(episodeViewController, animated: true)
+		viewControllers.append(episodeViewController)
+		navigationController.setViewControllers(viewControllers, animated: true)
 	}
 	
-	func startBack() {
+	func openScreen(viewController: UIViewController) {
+		navigationController.pushViewController(viewController, animated: true)
+	}
+	
+	func navigateBack() {
 		navigationController.popViewController(animated: true)
 	}
 }

@@ -4,23 +4,14 @@
 
 import UIKit
 
-// MARK: - Episodes ViewController
-
 final class EpisodesViewController: UIViewController {
-	
-	// MARK: Enum Section
-	
-	private enum Section {
-		case main
-	}
-	
+
 	// MARK: Private properties
 	
 	private let searchBar = UISearchBar()
 	private let logoImageView = UIImageView()
 	private let buttonSort = UIButton(type: .system)
 	private var collectionView: UICollectionView!
-	private var dataSource: UICollectionViewDiffableDataSource<Section, Episode>!
 	
 	// MARK: Dependency
 	
@@ -42,22 +33,15 @@ final class EpisodesViewController: UIViewController {
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		view.backgroundColor = .white
-		
 		setupElements()
-		fetchDataForUi()
 		setupCollectionView()
-		setupLayout()
+		viewModel?.fetchData()
+		setupConstraints()
 	}
 	
 	// MARK: - Private Meathods
 	
 	// MARK: Setup UI
-	
-	private func fetchDataForUi() {
-		viewModel?.load { [weak self] result in
-			self?.fetchData(items: result)
-		}
-	}
 	
 	private func setupElements() {
 		
@@ -120,8 +104,8 @@ extension EpisodesViewController: UICollectionViewDelegate {
 	
 	func setupCollectionView() {
 		addCollectionView(layout: createLayout())
-		setupDataSource()
 		collectionView.delegate = self
+		viewModel?.collectionDataSourse(collectionView: collectionView)
 	}
 	
 	func createLayout() -> UICollectionViewLayout {
@@ -157,46 +141,24 @@ extension EpisodesViewController: UICollectionViewDelegate {
 	
 	func addCollectionView(layout: UICollectionViewLayout) {
 		collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
-		collectionView.register(EpisideViewCell.self, forCellWithReuseIdentifier: EpisideViewCell.reuseIdentifier)
+		collectionView.register(
+			EpisodeViewCell.self, forCellWithReuseIdentifier: EpisodeViewCell.reuseIdentifier)
 		
 		collectionView.translatesAutoresizingMaskIntoConstraints = false
 		self.view.addSubview(collectionView)
 	}
-	
-	func setupDataSource() {
-		dataSource = UICollectionViewDiffableDataSource<Section, Episode>(
-			collectionView: collectionView
-		) { (collectionView, indexPath, item) -> UICollectionViewCell? in
-			
-			guard let cell = collectionView.dequeueReusableCell(
-				withReuseIdentifier: EpisideViewCell.reuseIdentifier,
-				for: indexPath
-			) as? EpisideViewCell else { return UICollectionViewCell() }
-			cell.configure(with: item)
-			return cell
-		}
-	}
-	
-	func fetchData(items: [Episode]) {
-		var snapshot = NSDiffableDataSourceSnapshot<Section, Episode>()
-		snapshot.appendSections([.main])
-		snapshot.appendItems(items)
-		dataSource.apply(snapshot, animatingDifferences: true)
-	}
-	
+
 	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-		print("!!!!")
-		let item = dataSource.itemIdentifier(for: indexPath)
 		let charVC = CharacterTableViewController()
-		charVC.item = item
-		navigationController?.pushViewController(charVC, animated: true)
+		charVC.viewModel = viewModel?.getViewModelCharacter(indexPath: indexPath)
+		viewModel?.openCell(viewController: charVC)
 	}
 }
 
 // MARK: - Setup Constraints
 
 private extension EpisodesViewController {
-	func setupLayout() {
+	func setupConstraints() {
 		
 		NSLayoutConstraint.activate([
 			logoImageView.heightAnchor.constraint(equalToConstant: 100),
@@ -220,19 +182,3 @@ private extension EpisodesViewController {
 		])
 	}
 }
-
-
-
-// MARK: - Preview
-
-//struct ContentViewPreviews: PreviewProvider {
-//	struct ViewControllerContainer: UIViewControllerRepresentable {
-//		func makeUIViewController(context: Context) -> some UIViewController {
-//			UINavigationController(rootViewController: EpisodesViewController())
-//		}
-//		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
-//	}
-//	static var previews: some View {
-//		ViewControllerContainer().edgesIgnoringSafeArea(.all)
-//	}
-//}

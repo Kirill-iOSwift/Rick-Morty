@@ -16,4 +16,8 @@ struct Episode: Hashable {
 	let speciePers: String
 	let genderPers: String
 	let originPers: String
+	
+	var isFavourite = false
 }
+
+

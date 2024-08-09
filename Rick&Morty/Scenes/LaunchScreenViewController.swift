@@ -13,10 +13,6 @@ final class LaunchScreenViewController: UIViewController {
 	private let logoImageView = UIImageView()
 	private let portalImageView = UIImageView()
 	
-	// MARK: Dependency
-	
-	weak var coordinator: MainCoordinator?
-	
 	// MARK: Life Cycle
 	
 	override func viewDidLoad() {
@@ -26,16 +22,7 @@ final class LaunchScreenViewController: UIViewController {
 		setupLayout()
 		rotationPortal()
 	}
-	
-	override func viewWillDisappear(_ animated: Bool) {
-		super.viewWillDisappear(animated)
-		portalImageView.layer.removeAnimation(forKey: "rotationAnimation")
-	}
-	
-	deinit {
-		print("ViewController deinitialized")
-	}
-	
+
 	// MARK: - Private Meathods
 	
 	// MARK: SetupUI
@@ -58,14 +45,9 @@ final class LaunchScreenViewController: UIViewController {
 		
 		let rotation = CABasicAnimation(keyPath: "transform.rotation")
 		rotation.toValue = Double.pi * 2
-		rotation.duration = 1
+		rotation.duration = 0.5
 		rotation.repeatCount = .infinity
-		
 		portalImageView.layer.add(rotation, forKey: "rotationAnimation")
-		
-		DispatchQueue.main.asyncAfter(deadline: .now() + 3) { [weak self] in
-			self?.coordinator?.startNext()
-		}
 	}
 	
 	// MARK: Setup Costraints
@@ -83,6 +65,10 @@ final class LaunchScreenViewController: UIViewController {
 			portalImageView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
 			portalImageView.centerXAnchor.constraint(equalTo: view.centerXAnchor)
 		])
+	}
+	
+	deinit {
+		print("Deinit LaunchScreen")
 	}
 }
 

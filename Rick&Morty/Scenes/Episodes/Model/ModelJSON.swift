@@ -4,8 +4,6 @@
 
 import Foundation
 
-// MARK: - Models JSON
-
 // MARK: RickAndMortyResponse
 
 struct RickAndMorty: Decodable {

@@ -1,13 +1,8 @@
 //
 //  NameLabelView.swift
 //  Rick&Morty
-//
-//  Created by Кирилл on 30.07.2024.
-//
 
 import UIKit
-
-// MARK: - Name Label View
 
 final class NameLabel: UIView {
 	
@@ -33,6 +28,7 @@ final class NameLabel: UIView {
 	private func setLabel() {
 		self.backgroundColor = .white
 		nameLabel.font = .boldSystemFont(ofSize: 22)
+		nameLabel.numberOfLines = 0
 		nameLabel.translatesAutoresizingMaskIntoConstraints = false
 		addSubview(nameLabel)
 	}
@@ -43,6 +39,7 @@ final class NameLabel: UIView {
 		
 		NSLayoutConstraint.activate([
 			nameLabel.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 15),
+			nameLabel.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -15),
 			nameLabel.centerYAnchor.constraint(equalTo: self.centerYAnchor)
 		])
 	}

@@ -1,9 +1,6 @@
 //
 //  HeaderView.swift
 //  Rick&Morty
-//
-//  Created by Кирилл on 02.08.2024.
-//
 
 import UIKit
 
@@ -12,25 +9,28 @@ import UIKit
 final class HeaderView: UIView {
 	
 	// MARK: Properties
-	
+	let nameCharacter: String
+	let imageUrl: URL
 	let imageCharacterView: UIImageView
-	var buttonPhoto: UIButton
-	let nameCharacterLabel: UILabel
-	let infoLabel: UILabel
+	
+	private let buttonPhoto = UIButton(type: .system)
+	private let nameCharacterLabel = UILabel()
+	private let infoLabel = UILabel()
+	
+	var bottonPhotoTapped: (() -> Void)?
 	
 	// MARK: Initialization
 	
 	init(
 		frame: CGRect,
-		imageCharacterView: UIImageView,
-		buttonPhoto: UIButton,
-		nameCharacterLabel: UILabel,
-		infoLabel: UILabel
+		nameCharacter: String,
+		imageUrl: URL,
+		imageCharacterView: UIImageView
 	) {
+		self.nameCharacter = nameCharacter
+		self.imageUrl = imageUrl
 		self.imageCharacterView = imageCharacterView
-		self.buttonPhoto = buttonPhoto
-		self.nameCharacterLabel = nameCharacterLabel
-		self.infoLabel = infoLabel
+		
 		super.init(frame: frame)
 		setupElements()
 		setupConstraints()
@@ -50,20 +50,20 @@ final class HeaderView: UIView {
 	
 	private func setupElements() {
 		
-		imageCharacterView.contentMode = .scaleAspectFit
+		imageCharacterView.contentMode = .scaleAspectFill
 		imageCharacterView.clipsToBounds = true
-		imageCharacterView.layer.borderColor = UIColor.white.cgColor
-		imageCharacterView.layer.borderWidth = 1
-		imageCharacterView.image = UIImage(named: "logotype")
+		imageCharacterView.layer.borderColor = UIColor.black.cgColor
+		imageCharacterView.layer.borderWidth = 2
+		imageCharacterView.setImage(from: imageUrl)
 		
-		buttonPhoto = UIButton(type: .system)
 		buttonPhoto.setImage(UIImage(systemName: "camera"), for: .normal)
 		buttonPhoto.tintColor = .black
 		buttonPhoto.imageView?.contentMode = .scaleToFill
+		buttonPhoto.addTarget(self, action: #selector(tapToButtonPhoto), for: .touchUpInside)
 		
 		nameCharacterLabel.font = .boldSystemFont(ofSize: 26)
 		nameCharacterLabel.textAlignment = .center
-		nameCharacterLabel.text = "Name Character"
+		nameCharacterLabel.text = nameCharacter
 		
 		infoLabel.text = "Information"
 		infoLabel.font = .systemFont(ofSize: 22)
@@ -100,8 +100,8 @@ final class HeaderView: UIView {
 		])
 	}
 	
-	deinit {
-		print("deinit Header")
+	@objc private func tapToButtonPhoto() {
+	bottonPhotoTapped?()
 	}
 }
 

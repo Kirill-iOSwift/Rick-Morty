@@ -4,8 +4,6 @@
 
 import UIKit
 
-// MARK: - Bottom View
-
 final class BottomView: UIView {
 	
 	// MARK: Properties
@@ -33,7 +31,6 @@ final class BottomView: UIView {
 	
 	private func setupSubview() {
 		self.backgroundColor = .systemGray6
-		self.layer.cornerRadius = 20
 
 		image.tintColor = .black
 		label.font = .systemFont(ofSize: 22)

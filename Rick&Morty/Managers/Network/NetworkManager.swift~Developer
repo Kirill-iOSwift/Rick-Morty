@@ -1,6 +1,8 @@
 //
-//  NetworkManager.swift
+//  Network.swift
 //  Rick&Morty
+
+// MARK: - Network Manager
 
 import Foundation
 
@@ -10,42 +12,42 @@ fileprivate enum UrlRickAndMoarty: String {
 	case url = "https://rickandmortyapi.com/api/episode"
 }
 
-// MARK: - Struct
+// MARK: - Protocol
 
-struct NetworkManager {
+protocol NetworkManagerProtocol: AnyObject {
+	func fetchEpisodeData(completion: @escaping ([EpisodeTest]) -> Void)
+}
+
+// MARK: - Class
+
+final class NetworkManager: NetworkManagerProtocol {
 	
-	func fetchEpisodeData(completion: @escaping ([Episode]) -> Void) {
-		
+	func fetchEpisodeData(completion: @escaping ([EpisodeTest]) -> Void) {
 		guard let url = URL(string: UrlRickAndMoarty.url.rawValue) else { return }
-		
 		let urlRequest = URLRequest(url: url)
 		let session = URLSession(configuration: .default)
 		let decoder = JSONDecoder()
-		let group = DispatchGroup()
+		let lock = NSLock()
+				
+		var modelCharacters = [EpisodeTest]()
 		
-		var modelCharacters = [Episode]()
-
 		let task = session.dataTask(with: urlRequest) { (data, response, error) in
-
 			guard error == nil else {
 				return }
 			guard let data = data else { return }
-			
 			do {
 				let response = try decoder.decode(RickAndMorty.self, from: data)
-				
 				for episode in response.results {
-					group.enter()
 					guard let character = episode.characters.randomElement() else { return }
+					lock.lock()
 					self.fetchImageData(url: character) { character in
 						let model = self.createModel(episode: episode, character: character)
-							modelCharacters.append(model)
-						group.leave()
+						modelCharacters.append(model)
+						lock.unlock()
+						
 					}
 				}
-				group.notify(queue: .main) {
-					completion(modelCharacters)
-				}
+				completion(modelCharacters)
 			}
 			catch {
 				print(error.localizedDescription)
@@ -54,8 +56,7 @@ struct NetworkManager {
 		task.resume()
 	}
 	
-	private func fetchImageData(url: URL, completion: @escaping (RickAndMorty.Character) -> Void) {
-
+	func fetchImageData(url: URL, completion: @escaping (RickAndMorty.Character) -> Void) {
 		let urlRequest = URLRequest(url: url)
 		let session = URLSession(configuration: .default)
 		let decoder = JSONDecoder()
@@ -75,9 +76,8 @@ struct NetworkManager {
 		task.resume()
 	}
 	
-	private func createModel(episode: RickAndMorty.Episode, character: RickAndMorty.Character) -> Episode {
-		let model = Episode(
-
+	func createModel(episode: RickAndMorty.Episode, character: RickAndMorty.Character) -> EpisodeTest {
+		let model = EpisodeTest(
 			nameEpisode: episode.name,
 			imagePers: character.image,
 			numberEpisode: episode.episode,
@@ -87,6 +87,7 @@ struct NetworkManager {
 			genderPers: character.gender,
 			originPers: character.origin.name
 		)
+		
 		return model
 	}
 }

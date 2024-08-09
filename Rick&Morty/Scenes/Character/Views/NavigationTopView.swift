@@ -11,11 +11,12 @@ final class NavigationTopView: UIView {
 	// MARK: Properties
 	
 	private let image = UIImageView()
+	private let buttot = UIButton(type: .system)
 	
-	var buttot: UIButton
+	private let goBack: () -> ()
 	
-	init(frame: CGRect, buttot: UIButton) {
-		self.buttot = buttot
+	init(frame: CGRect, goBack: @escaping () -> ()) {
+		self.goBack = goBack
 		super.init(frame: frame)
 		setupElement()
 		setupConstraints()
@@ -30,20 +31,21 @@ final class NavigationTopView: UIView {
 	private func setupElement() {
 		
 		self.backgroundColor = .white
+		let action = UIAction { [weak self] _ in
+			self?.goBack()
+		}
 		
 		buttot.setTitle("← GO BACK", for: .normal)
 		buttot.setTitleColor(.black, for: .normal)
 		buttot.titleLabel?.font = .boldSystemFont(ofSize: 17)
+		buttot.addAction(action, for: .touchUpInside)
 		
 		image.image = UIImage(named: "logotype")
 		image.layer.cornerRadius = 10
-		
-		
 		image.contentMode = .scaleAspectFit
 		image.clipsToBounds = true
 		image.layer.borderColor = UIColor.white.cgColor
 		image.layer.borderWidth = 1
-		
 		
 		[image, buttot].forEach {
 			$0.translatesAutoresizingMaskIntoConstraints = false
@@ -65,9 +67,5 @@ final class NavigationTopView: UIView {
 			image.widthAnchor.constraint(equalToConstant: 50),
 			image.heightAnchor.constraint(equalToConstant: 50),
 		])
-	}
-	
-	deinit {
-		print("deinit NavView")
 	}
 }
