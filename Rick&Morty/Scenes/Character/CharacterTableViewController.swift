@@ -71,6 +71,8 @@ final class CharacterTableViewController: UIViewController {
 		self.present(alert, animated: true)
 	}
 	
+	// TODO: Реализовать блюр экрана при алерте
+	
 	private func setupContraints() {
 		NSLayoutConstraint.activate([
 			
