@@ -4,9 +4,9 @@
 
 import Foundation
 
-struct Episode: Hashable {
+struct Episode: Hashable, Codable {
 	
-	let id = UUID()
+	var id = UUID()
 	let nameEpisode: String
 	let imagePers: URL
 	let numberEpisode: String
