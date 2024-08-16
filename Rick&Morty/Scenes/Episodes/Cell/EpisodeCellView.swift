@@ -6,7 +6,7 @@ import UIKit
 
 // MARK: - EpisideView Cell
 
-final class EpisodeViewCell: UICollectionViewCell {
+final class EpisodeCellView: UICollectionViewCell {
 	
 	// MARK: Properties
 	
@@ -156,7 +156,7 @@ final class EpisodeViewCell: UICollectionViewCell {
 	}
 }
 
-extension EpisodeViewCell: UIGestureRecognizerDelegate {
+extension EpisodeCellView: UIGestureRecognizerDelegate {
 	func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
 		if gestureRecognizer is UIPanGestureRecognizer {
 			return true
