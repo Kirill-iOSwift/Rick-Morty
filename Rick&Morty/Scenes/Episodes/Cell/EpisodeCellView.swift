@@ -70,7 +70,7 @@ final class EpisodeCellView: UICollectionViewCell {
 		image.image = UIImage(systemName: "play.tv")
 		
 		button.setImage(UIImage(systemName: "heart.fill"), for: .normal)
-		button.addTarget(self, action: #selector(tap), for: .touchUpInside)
+		button.addTarget(self, action: #selector(likeButtonPress), for: .touchUpInside)
 	}
 	
 	// MARK: Setup Constraints
@@ -94,7 +94,7 @@ final class EpisodeCellView: UICollectionViewCell {
 		])
 	}
 	
-	@objc private func tap() {
+	@objc private func likeButtonPress() {
 		UIView.animate(withDuration: 0.1, animations: {
 			self.button.transform = CGAffineTransform(scaleX: 1.5, y: 1.5)
 		}) { _ in
