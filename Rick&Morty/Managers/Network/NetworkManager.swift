@@ -22,8 +22,9 @@ struct NetworkManager {
 		let session = URLSession(configuration: .default)
 		let decoder = JSONDecoder()
 		let group = DispatchGroup()
-		
-		var modelCharacters = [Episode]()
+				
+//		var modelCharacters = [Episode]()
+		let provider = RickAndMortyProvider()
 
 		let task = session.dataTask(with: urlRequest) { (data, response, error) in
 
@@ -33,18 +34,18 @@ struct NetworkManager {
 			
 			do {
 				let response = try decoder.decode(RickAndMorty.self, from: data)
-				
 				for episode in response.results {
 					group.enter()
 					guard let character = episode.characters.randomElement() else { return }
 					self.fetchImageData(url: character) { character in
 						let model = self.createModel(episode: episode, character: character)
-							modelCharacters.append(model)
+//							modelCharacters.append(model)
+						provider.value.append(model)
 						group.leave()
 					}
 				}
 				group.notify(queue: .main) {
-					completion(modelCharacters)
+					completion(provider.value)
 				}
 			}
 			catch {

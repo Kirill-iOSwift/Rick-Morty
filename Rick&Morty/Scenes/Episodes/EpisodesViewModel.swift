@@ -10,47 +10,53 @@ protocol EpisodesViewModelProtocol: AnyObject {
 	var episodes: [Episode] { get }
 	func fetchData()
 	
-	func collectionDataSourse(collectionView: UICollectionView)
+	var updateUI: (() -> Void)? { get set }
 	
 	func toggleFavorite(for episode: Episode)
-	func removeEpisode(at indexPath: IndexPath)
+	func removeEpisode(item: Episode)
 	
 	func cellViewModel(indexPath: IndexPath) -> EpisodeCellViewModelProtocol
-	func getViewModelCharacter(indexPath: IndexPath) -> CharacterTableViewModelProtocol?
+	func getViewModelCharacter(item: Episode) -> CharacterTableViewModelProtocol?
 	func openCell(viewController: UIViewController)
+	
+	func sortName()
+	func sortSeason()
+	
+	func filterEpisodes(by searchText: String)
 }
 
 // MARK: Class
 
 final class EpisodesViewModel: EpisodesViewModelProtocol {
 	
-	// MARK: - enum DDS
-	
-	enum Section: Hashable {
-		case main
-	}
-	
 	// MARK: Properties
 	
-	private(set) var dataSource: UICollectionViewDiffableDataSource<Section, Episode>!
-	
-	private let episodesSave = RickAndMortyProvider()
 	private let network = NetworkManager()
+	let favouritesManager = FavoritesManager()
+
 	
-	var episodes: [Episode] {
-		episodesSave.value
+	private var originalEpisides = [Episode]()
+	
+	var episodes: [Episode] = [] {
+		didSet {
+			updateUI?()
+		}
 	}
-	
+
+	var updateUI: (() -> Void)?
 	var coordinator: CoordinatorProtocol?
+	
+	init() {
+		episodes = originalEpisides
+		fetchData()
+	}
 
 	// MARK: Methods
 
 	func fetchData() {
 		network.fetchEpisodeData { models in
-			self.episodesSave.value = models
-			DispatchQueue.main.async {
-				self.updateSnapshot(episodes: self.episodes, animating: true)
-			}
+			self.originalEpisides = models
+			self.episodes = models
 		}
 	}
 	
@@ -64,8 +70,7 @@ final class EpisodesViewModel: EpisodesViewModelProtocol {
 		
 	}
 	
-	func getViewModelCharacter(indexPath: IndexPath) -> CharacterTableViewModelProtocol? {
-		guard let item = dataSource.itemIdentifier(for: indexPath) else { return nil }
+	func getViewModelCharacter(item: Episode) -> CharacterTableViewModelProtocol? {
 		let cellViewController = CharacterTableViewModel(character: item)
 		cellViewController.coordinator = coordinator
 		return cellViewController
@@ -73,60 +78,33 @@ final class EpisodesViewModel: EpisodesViewModelProtocol {
 
 	func toggleFavorite(for episode: Episode) {
 		if let index = episodes.firstIndex(where: { $0.id == episode.id }) {
-			var updatedEpisode = episodes[index]
-			updatedEpisode.isFavourite.toggle()
-			episodesSave.value[index] = updatedEpisode
-			updateSnapshot(episodes: self.episodes, animating: true)
+			episodes[index].isFavourite.toggle()			
 		}
 	}
 
-	func removeEpisode(at indexPath: IndexPath) {
-		let itemToDelete = episodes[indexPath.item]
-		episodesSave.value.remove(at: indexPath.item)
-		delete(indexPath: itemToDelete)
+	func removeEpisode(item: Episode) {
+		if let index = episodes.firstIndex(where: { $0.id == item.id }) {
+			episodes.remove(at: index)
+		}
+	}
+	
+	func sortName() {
+		episodes.sort { $0.nameEpisode < $1.nameEpisode }
+	}
+	
+	func sortSeason() {
+		episodes.sort { $0.numberEpisode < $1.numberEpisode}
+	}
+	
+	func filterEpisodes(by searchText: String) {
+		if searchText.isEmpty {
+			episodes = originalEpisides
+		} else {
+			episodes = episodes.filter { episode in
+				let episodeSuffix = episode.numberEpisode.suffix(2)
+				return episodeSuffix.contains(searchText)
+			}
+		}
 	}
 }
 
-// MARK: Setup Collection View DDS
-
-// TODO: - Убрать из ViewModel
-
-extension EpisodesViewModel {
-	
-	internal func collectionDataSourse(collectionView: UICollectionView) {
-		configureDataSourse(collectionView: collectionView)
-		}
-	
-	private func configureDataSourse(collectionView: UICollectionView) {
-		dataSource = UICollectionViewDiffableDataSource<Section, Episode>(collectionView: collectionView) {
-			(collectionView, indexPath, item) -> UICollectionViewCell? in
-			guard let cell = collectionView.dequeueReusableCell(
-				withReuseIdentifier: EpisodeViewCell.reuseIdentifier,
-				for: indexPath
-			) as? EpisodeViewCell else { return UICollectionViewCell() }
-			
-			cell.configure(with: item)
-			cell.onFavouriteToggle = { [weak self] in
-				self?.toggleFavorite(for: item)
-			}
-			cell.onDelete = { [weak self] in
-				self?.removeEpisode(at: indexPath)
-			}
-			
-			return cell
-		}
-	}
-
-	private func updateSnapshot(episodes: [Episode], animating: Bool) {
-		var snapshot = NSDiffableDataSourceSnapshot<Section, Episode>()
-			snapshot.appendSections([.main])
-			snapshot.appendItems(episodes)
-			self.dataSource.apply(snapshot, animatingDifferences: animating)
-	}
-	
-	private func delete(indexPath: Episode) {
-		var snapshot = dataSource.snapshot()
-		snapshot.deleteItems([indexPath])
-		dataSource.apply(snapshot, animatingDifferences: true)
-	}
-}

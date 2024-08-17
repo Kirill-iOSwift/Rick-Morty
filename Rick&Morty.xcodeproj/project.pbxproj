@@ -10,6 +10,8 @@
 		ED014F0F2C65085E00B7D641 /* TabbarViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED014F0E2C65085E00B7D641 /* TabbarViewController.swift */; };
 		ED014F112C65546300B7D641 /* FavouriteViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED014F102C65546300B7D641 /* FavouriteViewModel.swift */; };
 		ED014F132C66591F00B7D641 /* Provider.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED014F122C66591F00B7D641 /* Provider.swift */; };
+		ED014F172C6CCD3F00B7D641 /* ImagePHPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED014F162C6CCD3F00B7D641 /* ImagePHPicker.swift */; };
+		ED014F192C6D101100B7D641 /* FavouriteManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED014F182C6D101100B7D641 /* FavouriteManager.swift */; };
 		ED0B74842C5CC8C9005B47FE /* HeaderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED0B74832C5CC8C9005B47FE /* HeaderView.swift */; };
 		ED0B74862C5CFCAB005B47FE /* NavigationTopView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED0B74852C5CFCAB005B47FE /* NavigationTopView.swift */; };
 		ED0B74892C5D2DD2005B47FE /* ModelMain.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED0B74882C5D2DD2005B47FE /* ModelMain.swift */; };
@@ -31,7 +33,7 @@
 		ED56DFAC2C5E4A8500FFA5CE /* EpisodeCellViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED56DFAB2C5E4A8500FFA5CE /* EpisodeCellViewModel.swift */; };
 		ED56DFAE2C5E4F2800FFA5CE /* CharacterTableViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED56DFAD2C5E4F2800FFA5CE /* CharacterTableViewModel.swift */; };
 		EDBFFA732C4D60A1007A4E42 /* Coordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDBFFA722C4D60A1007A4E42 /* Coordinator.swift */; };
-		EDBFFB422C51040B007A4E42 /* EpisodeViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDBFFB412C51040B007A4E42 /* EpisodeViewCell.swift */; };
+		EDBFFB422C51040B007A4E42 /* EpisodeCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDBFFB412C51040B007A4E42 /* EpisodeCellView.swift */; };
 		EDBFFB462C513770007A4E42 /* BottomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EDBFFB452C513770007A4E42 /* BottomView.swift */; };
 /* End PBXBuildFile section */
 
@@ -39,6 +41,8 @@
 		ED014F0E2C65085E00B7D641 /* TabbarViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabbarViewController.swift; sourceTree = "<group>"; };
 		ED014F102C65546300B7D641 /* FavouriteViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavouriteViewModel.swift; sourceTree = "<group>"; };
 		ED014F122C66591F00B7D641 /* Provider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Provider.swift; sourceTree = "<group>"; };
+		ED014F162C6CCD3F00B7D641 /* ImagePHPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImagePHPicker.swift; sourceTree = "<group>"; };
+		ED014F182C6D101100B7D641 /* FavouriteManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FavouriteManager.swift; sourceTree = "<group>"; };
 		ED0B74832C5CC8C9005B47FE /* HeaderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeaderView.swift; sourceTree = "<group>"; };
 		ED0B74852C5CFCAB005B47FE /* NavigationTopView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTopView.swift; sourceTree = "<group>"; };
 		ED0B74882C5D2DD2005B47FE /* ModelMain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelMain.swift; sourceTree = "<group>"; };
@@ -62,7 +66,7 @@
 		ED56DFAB2C5E4A8500FFA5CE /* EpisodeCellViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeCellViewModel.swift; sourceTree = "<group>"; };
 		ED56DFAD2C5E4F2800FFA5CE /* CharacterTableViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterTableViewModel.swift; sourceTree = "<group>"; };
 		EDBFFA722C4D60A1007A4E42 /* Coordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinator.swift; sourceTree = "<group>"; };
-		EDBFFB412C51040B007A4E42 /* EpisodeViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeViewCell.swift; sourceTree = "<group>"; };
+		EDBFFB412C51040B007A4E42 /* EpisodeCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EpisodeCellView.swift; sourceTree = "<group>"; };
 		EDBFFB452C513770007A4E42 /* BottomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BottomView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -82,6 +86,7 @@
 			children = (
 				ED56DFAD2C5E4F2800FFA5CE /* CharacterTableViewModel.swift */,
 				ED304C122C5BBD48005E0846 /* CharacterTableViewController.swift */,
+				ED014F162C6CCD3F00B7D641 /* ImagePHPicker.swift */,
 				ED0B74872C5D269A005B47FE /* Views */,
 			);
 			path = Character;
@@ -123,7 +128,6 @@
 				ED1FACA02C59070D004CF169 /* Extension */,
 				ED1FAC922C553D46004CF169 /* EpisodesViewModel.swift */,
 				ED3AD3F62C43EB58005484D9 /* EpisodesViewController.swift */,
-				ED1FAC8D2C52BEA0004CF169 /* Model */,
 				ED1FAC8C2C52BE89004CF169 /* Cell */,
 			);
 			path = Episodes;
@@ -134,6 +138,7 @@
 			children = (
 				ED014F102C65546300B7D641 /* FavouriteViewModel.swift */,
 				ED3AD3F82C43FC3C005484D9 /* FavouriteEpisodeViewController.swift */,
+				ED014F182C6D101100B7D641 /* FavouriteManager.swift */,
 			);
 			path = FavouritesEpisodes;
 			sourceTree = "<group>";
@@ -142,7 +147,7 @@
 			isa = PBXGroup;
 			children = (
 				ED56DFAB2C5E4A8500FFA5CE /* EpisodeCellViewModel.swift */,
-				EDBFFB412C51040B007A4E42 /* EpisodeViewCell.swift */,
+				EDBFFB412C51040B007A4E42 /* EpisodeCellView.swift */,
 				ED1FACA32C590F56004CF169 /* Views */,
 			);
 			path = Cell;
@@ -212,6 +217,7 @@
 		ED3AD3DC2C41AB7E005484D9 /* Rick&Morty */ = {
 			isa = PBXGroup;
 			children = (
+				ED1FAC8D2C52BEA0004CF169 /* Model */,
 				ED3AD3F12C41B55D005484D9 /* Application */,
 				ED1FAC892C52BDD1004CF169 /* Scenes */,
 				ED1FAC882C52BD10004CF169 /* Managers */,
@@ -319,6 +325,8 @@
 			files = (
 				ED1FACA92C59251F004CF169 /* Error.swift in Sources */,
 				ED0B74842C5CC8C9005B47FE /* HeaderView.swift in Sources */,
+				ED014F172C6CCD3F00B7D641 /* ImagePHPicker.swift in Sources */,
+				ED014F192C6D101100B7D641 /* FavouriteManager.swift in Sources */,
 				ED014F0F2C65085E00B7D641 /* TabbarViewController.swift in Sources */,
 				EDBFFB462C513770007A4E42 /* BottomView.swift in Sources */,
 				ED014F132C66591F00B7D641 /* Provider.swift in Sources */,
@@ -339,7 +347,7 @@
 				ED3AD3E02C41AB7E005484D9 /* SceneDelegate.swift in Sources */,
 				ED1FACA52C5913D5004CF169 /* NameLabelView.swift in Sources */,
 				ED014F112C65546300B7D641 /* FavouriteViewModel.swift in Sources */,
-				EDBFFB422C51040B007A4E42 /* EpisodeViewCell.swift in Sources */,
+				EDBFFB422C51040B007A4E42 /* EpisodeCellView.swift in Sources */,
 				ED0B74862C5CFCAB005B47FE /* NavigationTopView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -487,6 +495,8 @@
 				DEVELOPMENT_TEAM = B4D33S9Y62;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Rick&Morty/Application/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Нужно получить доступ к камере, чтобы сделать снимок";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Нужно получить доступ к вашей библиотеке фотографий, чтобы выбрать фотографию";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
@@ -519,6 +529,8 @@
 				DEVELOPMENT_TEAM = B4D33S9Y62;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = "Rick&Morty/Application/Info.plist";
+				INFOPLIST_KEY_NSCameraUsageDescription = "Нужно получить доступ к камере, чтобы сделать снимок";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Нужно получить доступ к вашей библиотеке фотографий, чтобы выбрать фотографию";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;

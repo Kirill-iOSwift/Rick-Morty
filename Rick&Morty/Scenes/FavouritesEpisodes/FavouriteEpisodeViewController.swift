@@ -11,7 +11,7 @@ final class FavouriteEpisodeViewController: UIViewController {
 	enum Section: Hashable {
 		case main
 	}
-	
+		
 	// MARK: Private properties
 	
 	private let titleView = UIView()
@@ -42,9 +42,10 @@ final class FavouriteEpisodeViewController: UIViewController {
 		setupCollectionView()
 		setupLayout()
 	}
-	
+
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
+		guard let viewModel = viewModel else { return }
 		fetchData()
 	}
 	
@@ -71,10 +72,12 @@ final class FavouriteEpisodeViewController: UIViewController {
 
 // MARK: - Setup VollectionView
 
-private extension FavouriteEpisodeViewController {
+extension FavouriteEpisodeViewController {
 	
 	private func setupCollectionView() {
 		addCollectionView(layout: createLayout())
+		collectionView.delegate = self
+	
 		setupDataSource()
 		fetchData()
 	}
@@ -116,7 +119,7 @@ private extension FavouriteEpisodeViewController {
 		let layout = createLayout()
 		
 		collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
-		collectionView.register(EpisodeViewCell.self, forCellWithReuseIdentifier: EpisodeViewCell.reuseIdentifier)
+		collectionView.register(EpisodeCellView.self, forCellWithReuseIdentifier: EpisodeCellView.reuseIdentifier)
 		collectionView.translatesAutoresizingMaskIntoConstraints = false
 		collectionView.backgroundColor = .systemGray6
 		
@@ -129,15 +132,14 @@ private extension FavouriteEpisodeViewController {
 		) { (collectionView, indexPath, item) -> UICollectionViewCell? in
 			
 			guard let cell = collectionView.dequeueReusableCell(
-				withReuseIdentifier: EpisodeViewCell.reuseIdentifier,
+				withReuseIdentifier: EpisodeCellView.reuseIdentifier,
 				for: indexPath
-			) as? EpisodeViewCell else { return UICollectionViewCell() }
-			cell.configure(with: item)
+			) as? EpisodeCellView else { return UICollectionViewCell() }
+			cell.configure(with: item, swipe: false)
 			cell.onFavouriteToggle = { [weak self] in
 				self?.viewModel?.toggleFavorite(for: item)
 				self?.fetchData()
 			}
-			
 			return cell
 		}
 	}
@@ -149,6 +151,16 @@ private extension FavouriteEpisodeViewController {
 		snapshot.appendSections([.main])
 		snapshot.appendItems(items)
 		dataSource?.apply(snapshot, animatingDifferences: true)
+	}
+}
+
+extension FavouriteEpisodeViewController: UICollectionViewDelegate {
+	
+	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+		guard let item = dataSource?.itemIdentifier(for: indexPath) else { return }
+		let charVC = CharacterTableViewController()
+		charVC.viewModel = viewModel?.getViewModelCharacter(item: item)
+		viewModel?.openCell(viewController: charVC)
 	}
 }
 

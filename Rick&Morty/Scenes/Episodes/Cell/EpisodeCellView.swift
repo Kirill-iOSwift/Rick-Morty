@@ -13,17 +13,17 @@ final class EpisodeCellView: UICollectionViewCell {
 	static let reuseIdentifier = "ItemCell"
 	
 	private var originalCenter: CGPoint = .zero
-	var deleteAction: (() -> Void)?
 	
 	private var imageView = UIImageView()
 	private let nameLabel = UILabel()
 	private let episodeLabel = UILabel()
 	private var image = UIImageView()
-	private var like = false
+	private var like: Bool = false
 	
 	var onFavouriteToggle: (() -> Void)?
 	var onDelete: (() -> Void)?
 	
+	private var swipeOn: Bool = true
 	
 	private lazy var labelCell = NameLabel(frame: .zero, nameLabel: nameLabel)
 	private lazy var viewCell = BottomView(frame: .zero, label: episodeLabel, button: button, image: image)
@@ -37,7 +37,6 @@ final class EpisodeCellView: UICollectionViewCell {
 		setupCell()
 		setupViews()
 		setupConstraints()
-		setupGestureRecognizers()
 	}
 	
 	required init?(coder: NSCoder) {
@@ -108,59 +107,34 @@ final class EpisodeCellView: UICollectionViewCell {
 	
 	// MARK: Configure
 	
-	func configure(with item: Episode) {
+	func configure(with item: Episode, swipe: Bool) {
 		let color: UIColor = item.isFavourite ? .red : .lightGray
 		button.tintColor = color
 		nameLabel.text = item.nameEpisode
 		episodeLabel.text = item.numberEpisode
 		imageView.setImage(from: item.imagePers)
+		swipeOn = swipe
+		
+		if swipeOn {
+			setupGestureRecognizers()
+		}
 	}
 	
-// MARK: - Gesture Recognaizer
+	// MARK: - Gesture Recognaizer
 	
 	private func setupGestureRecognizers() {
-		let panGesture = UIPanGestureRecognizer(target: self, action: #selector(swipeLeftCellForDelete(_:)))
-		panGesture.delegate = self
-		self.addGestureRecognizer(panGesture)
+		let leftSwipe = UISwipeGestureRecognizer(target: self, action: #selector(hendleSwipeLeft(_:)))
+		leftSwipe.direction = .left
+		self.addGestureRecognizer(leftSwipe)
 	}
 	
-	@objc private func swipeLeftCellForDelete(_ gesture: UIPanGestureRecognizer) {
-		let translation = gesture.translation(in: self)
-		
-		switch gesture.state {
-			case .began:
-				originalCenter = self.center
-				
-			case .changed:
-				if translation.x < 0 {
-					self.center = CGPoint(x: originalCenter.x + translation.x, y: originalCenter.y)
-				}
-				
-			case .ended, .cancelled:
-				let threshold: CGFloat = 0.5
-				if self.center.x < originalCenter.x * (1 - threshold) {
-					UIView.animate(withDuration: 0.3) {
-						self.center = CGPoint(x: -self.frame.size.width, y: self.originalCenter.y)
-					} completion: { _ in
-						self.onDelete?()
-					}
-				} else {
-					UIView.animate(withDuration: 0.3) {
-						self.center = self.originalCenter
-					}
-				}
-				
-			default:
-				break
+	@objc private func hendleSwipeLeft(_ gesture: UISwipeGestureRecognizer) {
+		if gesture.direction == .left {
+			UIView.animate(withDuration: 0.3) {
+				self.frame.origin.x = -(self.frame.width * 2)
+			} completion: { _ in
+				self.onDelete?()
+			}
 		}
-	}
-}
-
-extension EpisodeCellView: UIGestureRecognizerDelegate {
-	func gestureRecognizer(_ gestureRecognizer: UIGestureRecognizer, shouldRecognizeSimultaneouslyWith otherGestureRecognizer: UIGestureRecognizer) -> Bool {
-		if gestureRecognizer is UIPanGestureRecognizer {
-			return true
-		}
-		return false
 	}
 }

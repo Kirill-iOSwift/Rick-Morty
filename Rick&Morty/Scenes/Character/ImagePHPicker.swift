@@ -1,87 +1,78 @@
-////
-////  ImagePicker.swift
 //
-//import UIKit
-//
-//protocol ImagePickerProtocol {
-//	var preparedImage: UIImage? { get }
-//	func showImagePicker(sourseType: UIImagePickerController.SourceType, completion: ((UIImage) -> Void)?)
-//}
-//
-//final class ImagePicker: NSObject, ImagePickerProtocol {
-//	
-//	private lazy var ImagePicker: UIImagePickerController = {
-//		let pickerView = UIImagePickerController()
-//		pickerView.delegate = self
-//		return pickerView
-//	}()
-//	
-//	private let parentViewController: UIViewController
-//	private var onPreparedImage: ((UIImage) -> Void)?
-//	
-//	var preparedImage: UIImage?
-//	
-//	init(parentViewController: UIViewController) {
-//		self.parentViewController = parentViewController
-//	}
-//	
-//	func showImagePicker(sourseType: UIImagePickerController.SourceType, completion: ((UIImage) -> Void)?) {
-//		onPreparedImage = completion
-//		ImagePicker.sourceType = sourseType
-//		parentViewController.present(ImagePicker, animated: true)
-//	}	
-//}
-//
-//extension ImagePicker: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-//	func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-//		guard let image = info[.originalImage] as? UIImage else { return }
-//		picker.dismiss(animated: true) { [weak self] in
-//			self?.onPreparedImage?(image)
-//			self?.preparedImage = image
-//		}
-//	}
-//}
+//  ImagePicker.swift
 
 import UIKit
 import PhotosUI
 
-protocol ImagePHPickerProtocol {
+protocol ImagePickerProtocol {
 	var preparedImage: UIImage? { get }
-	func showImagePicker(filter: PHPickerFilter, completion: ((UIImage) -> Void)?)
+	func showImagePicker(
+		sourceType: UIImagePickerController.SourceType?,
+		filter: PHPickerFilter?,
+		completion: ((UIImage) -> Void)?
+	)
 }
 
-final class ImagePHPicker: NSObject, ImagePHPickerProtocol {
 
+final class ImagePicker: NSObject, ImagePickerProtocol {
+	
+	private lazy var imagePicker: UIImagePickerController = {
+		let picker = UIImagePickerController()
+		picker.delegate = self
+		return picker
+	}()
+	
 	private let parentViewController: UIViewController
 	private var onPreparedImage: ((UIImage) -> Void)?
-
+	
 	var preparedImage: UIImage?
-
+	
 	init(parentViewController: UIViewController) {
 		self.parentViewController = parentViewController
 		super.init()
 	}
-
-	func showImagePicker(filter: PHPickerFilter ,completion: ((UIImage) -> Void)?) {
+	
+	func showImagePicker(
+		sourceType: UIImagePickerController.SourceType? = nil,
+		filter: PHPickerFilter? = nil,
+		completion: ((UIImage) -> Void)?
+	) {
 		onPreparedImage = completion
+		
+		if let sourceType = sourceType {
+			imagePicker.sourceType = sourceType
+			parentViewController.present(imagePicker, animated: true)
+		} else if let filter = filter {
+			var configuration = PHPickerConfiguration()
+			configuration.selectionLimit = 1
+			configuration.filter = filter
+			let picker = PHPickerViewController(configuration: configuration)
+			picker.delegate = self
+			parentViewController.present(picker, animated: true)
+		}
+	}
+}
 
-		var configuration = PHPickerConfiguration()
-		configuration.selectionLimit = 1 // Ограничение на выбор одного изображения
-		configuration.filter = filter // Фильтр для выбора только изображений
+// MARK: - UIImagePickerControllerDelegate & UINavigationControllerDelegate
 
-		let picker = PHPickerViewController(configuration: configuration)
-		picker.delegate = self // Устанавливаем делегат
-
-		parentViewController.present(picker, animated: true)
+extension ImagePicker: UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+	func imagePickerController(
+		_ picker: UIImagePickerController,
+		didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]
+	) {
+		guard let image = info[.originalImage] as? UIImage else { return }
+		picker.dismiss(animated: true) { [weak self] in
+			self?.onPreparedImage?(image)
+			self?.preparedImage = image
+		}
 	}
 }
 
 // MARK: - PHPickerViewControllerDelegate
 
-extension ImagePHPicker: PHPickerViewControllerDelegate {
+extension ImagePicker: PHPickerViewControllerDelegate {
 	func picker(_ picker: PHPickerViewController, didFinishPicking results: [PHPickerResult]) {
 		picker.dismiss(animated: true) { [weak self] in
-			// Обработка выбранных медиа
 			for result in results {
 				if result.itemProvider.hasItemConformingToTypeIdentifier(UTType.image.identifier) {
 					result.itemProvider.loadObject(ofClass: UIImage.self) { [weak self] (image, error) in

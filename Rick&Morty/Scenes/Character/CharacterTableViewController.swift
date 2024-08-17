@@ -15,6 +15,7 @@ final class CharacterTableViewController: UIViewController {
 	})
 	
 	var viewModel: CharacterTableViewModelProtocol?
+	var picker: ImagePickerProtocol?
 	
 	// MARK: Life Cycle
 	
@@ -26,7 +27,7 @@ final class CharacterTableViewController: UIViewController {
 		setupContraints()
 		tableDataSourse(tableView: tableView)
 	}
-
+	
 	// MARK: Methods
 	
 	private func tableDataSourse(tableView: UITableView) {
@@ -52,7 +53,8 @@ final class CharacterTableViewController: UIViewController {
 		let header = HeaderView(
 			frame: .zero,
 			nameCharacter: pers.namePers,
-			imageUrl: pers.imagePers, imageCharacterView: imageCharacter
+			imageUrl: pers.imagePers,
+			imageCharacterView: imageCharacter
 		)
 		header.bottonPhotoTapped = { [weak self] in
 			self?.showAler()
@@ -60,18 +62,89 @@ final class CharacterTableViewController: UIViewController {
 		return header
 	}
 	
+	// MARK: - Alert Controller
+	
 	private func showAler() {
+		
+//		showBlurEffect()
+				
 		let alert = UIAlertController(
 			title: "Загрузите изображение",
 			message: nil,
 			preferredStyle: .actionSheet
 		)
-
-		alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+		
+		let camera = UIAlertAction(title: "Камера", style: .default) { _ in
+//			self.showAlertAccess(
+//				title: "Разрешить доступ к камере",
+//				message: "Это необходимо, чтобы сканировать штрих-коды, номер карты и использовать другие возможности"
+//			)
+			self.showPicker(camera: true)
+		}
+		
+		let galery = UIAlertAction(title: "Галерея", style: .default) { _ in
+//			self.showAlertAccess(
+//				title: "Разрешить доступ к \"Фото\"",
+//				message: "Это необходимо для добавления ваших фотографий"
+//			)
+			self.showPicker(camera: false)
+		}
+		let cancel = UIAlertAction(title: "Отменить", style: .cancel) { _ in
+			
+		}
+		
+		alert.addAction(camera)
+		alert.addAction(galery)
+		alert.addAction(cancel)
+		
 		self.present(alert, animated: true)
 	}
 	
-	// TODO: Реализовать блюр экрана при алерте
+	func showPicker(camera: Bool) {
+		picker = ImagePicker(parentViewController: self)
+		if camera {
+			picker?.showImagePicker(sourceType: .camera, filter: nil) { [weak self] image in
+				self?.imageCharacter.image = image
+			}
+		} else {
+			picker?.showImagePicker(sourceType: nil, filter: .images) { [weak self] image in
+				self?.imageCharacter.image = image
+			}
+		}
+	}
+	
+	private func showAlertAccess(title: String, message: String) {
+		let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+		let resolve = UIAlertAction(title: "Разрешить", style: .default)
+		let cancel = UIAlertAction(title: "Отменить", style: .cancel)
+		
+		alert.addAction(resolve)
+		alert.addAction(cancel)
+		
+		self.present(alert, animated: true)
+	}
+	
+	// MARK: Blur
+
+	let blurEffectView = UIVisualEffectView()
+	private func animateImageAndShowAlert() {
+		
+	}
+	
+	private func showBlurEffect() {
+		let blurEffect = UIBlurEffect(style: .dark)
+		blurEffectView.effect = blurEffect
+		blurEffectView.frame = view.bounds
+
+		view.addSubview(blurEffectView)
+		view.insertSubview(imageCharacter, aboveSubview: blurEffectView)
+	}
+	
+	private func dismissBlurEffectAndReturnImage() {
+		
+	}
+	
+// MARK: - Setup Constraints
 	
 	private func setupContraints() {
 		NSLayoutConstraint.activate([

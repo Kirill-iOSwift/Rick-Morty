@@ -19,7 +19,7 @@ enum Сharacteristics: Hashable {
 
 // MARK: Protocol
 
-protocol CharacterTableViewModelProtocol {
+protocol CharacterTableViewModelProtocol: AnyObject {
 	var character: Episode? { get }
 	var coordinator: CoordinatorProtocol? { get set }
 	

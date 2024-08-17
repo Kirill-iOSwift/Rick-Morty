@@ -1,8 +1,25 @@
 //
 //  TabbarViewModel.swift
 //  Rick&Morty
-//
-//  Created by Кирилл on 16.08.2024.
-//
 
 import Foundation
+
+protocol TabbarViewModelProtocol: AnyObject {
+	var episodes: [Episode] { get set }
+}
+
+class TabbarViewModel: TabbarViewModelProtocol {
+	
+	var episodes = [Episode]()
+	
+	init() {
+		fetchEpisodes()
+	}
+	
+	func fetchEpisodes() {
+		let networkManager = NetworkManager()
+		networkManager.fetchEpisodeData { [weak self] episodes in
+			self?.episodes = episodes
+		}
+	}
+}

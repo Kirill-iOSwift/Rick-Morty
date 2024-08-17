@@ -5,13 +5,21 @@
 import UIKit
 
 final class EpisodesViewController: UIViewController {
-
+	
+	// MARK: - enum DDS
+	
+	enum Section: Hashable {
+		case main
+	}
+	
 	// MARK: Private properties
 	
 	private let searchBar = UISearchBar()
 	private let logoImageView = UIImageView()
 	private let buttonSort = UIButton(type: .system)
 	private var collectionView: UICollectionView!
+	private var dataSource: UICollectionViewDiffableDataSource<Section, Episode>?
+	
 	
 	// MARK: Dependency
 	
@@ -35,7 +43,7 @@ final class EpisodesViewController: UIViewController {
 		view.backgroundColor = .white
 		setupElements()
 		setupCollectionView()
-		viewModel?.fetchData()
+		binding()
 		setupConstraints()
 	}
 	
@@ -43,12 +51,18 @@ final class EpisodesViewController: UIViewController {
 	
 	// MARK: Setup UI
 	
+	func binding() {
+		DispatchQueue.main.async { [weak self] in
+			self?.viewModel?.updateUI = {
+				self?.updateSnapshot()
+			}
+		}
+	}
+	
 	private func setupElements() {
-		
-		buttonSort.customizeSortdButton()
+		setupMenuSort()
 		logoImageView.image = UIImage(named: "logo")
 		setupSearchBar()
-		buttonSort.addTarget(self, action: #selector(sortItems), for: .touchUpInside)
 		
 		[logoImageView, searchBar, buttonSort].forEach {
 			$0.translatesAutoresizingMaskIntoConstraints = false
@@ -56,8 +70,20 @@ final class EpisodesViewController: UIViewController {
 		}
 	}
 	
-	@objc func sortItems() {
-		//TODO: Сделать сортировку
+	func setupMenuSort() {
+		buttonSort.customizeSortdButton()
+		let actionSortName = UIAction(title: "Название") { _ in
+			self.viewModel?.sortName()
+		}
+		
+		let actionSortSeason = UIAction(title: "Сезон") { _ in
+			self.viewModel?.sortSeason()
+		}
+		
+		let menu = UIMenu(title: "Сортировка", children: [actionSortName, actionSortSeason])
+		
+		buttonSort.menu = menu
+		buttonSort.showsMenuAsPrimaryAction = true
 	}
 }
 
@@ -68,33 +94,31 @@ extension EpisodesViewController: UISearchBarDelegate {
 	func setupSearchBar() {
 		searchBar.placeholder = "Search number series"
 		searchBar.delegate = self
-		searchBar.showsCancelButton = true
-		
-		if let searchTextField = searchBar.value(forKey: "searchField") as? UITextField {
-			searchTextField.keyboardType = .numberPad
-			searchTextField.returnKeyType = .done
-			searchTextField.delegate = self
-			
-		}
-		
-		let tapGesture = UITapGestureRecognizer(target: self, action: #selector(dismissKeyboard))
-		tapGesture.cancelsTouchesInView = false
-		view.addGestureRecognizer(tapGesture)
+		searchBar.keyboardType = .numberPad
+		searchBar.inputAccessoryView = createAccessoryView()
+	}
+	
+	func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+		viewModel?.filterEpisodes(by: searchText)
 	}
 	
 	func searchBarCancelButtonClicked(_ searchBar: UISearchBar) {
 		searchBar.resignFirstResponder()
 	}
-}
-
-extension EpisodesViewController: UITextFieldDelegate {
-	func textFieldShouldReturn(_ textField: UITextField) -> Bool {
-		textField.resignFirstResponder()
-		return true
+	
+	private func createAccessoryView() -> UIView {
+		let toolbar = UIToolbar()
+		toolbar.sizeToFit()
+		toolbar.backgroundColor = #colorLiteral(red: 0.2941176471, green: 0.2941176471, blue: 0.2941176471, alpha: 1)
+		let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(doneButtonTapped))
+		doneButton.tintColor = .black
+		let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+		toolbar.setItems([flexibleSpace, doneButton], animated: false)
+		return toolbar
 	}
 	
-	@objc func dismissKeyboard() {
-		view.endEditing(true)
+	@objc private func doneButtonTapped() {
+		searchBar.resignFirstResponder()
 	}
 }
 
@@ -105,7 +129,8 @@ extension EpisodesViewController: UICollectionViewDelegate {
 	func setupCollectionView() {
 		addCollectionView(layout: createLayout())
 		collectionView.delegate = self
-		viewModel?.collectionDataSourse(collectionView: collectionView)
+		configureDataSourse(collectionView: collectionView)
+		updateSnapshot()
 	}
 	
 	func createLayout() -> UICollectionViewLayout {
@@ -142,18 +167,64 @@ extension EpisodesViewController: UICollectionViewDelegate {
 	func addCollectionView(layout: UICollectionViewLayout) {
 		collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
 		collectionView.register(
-			EpisodeViewCell.self, forCellWithReuseIdentifier: EpisodeViewCell.reuseIdentifier)
+			EpisodeCellView.self, forCellWithReuseIdentifier: EpisodeCellView.reuseIdentifier)
 		
 		collectionView.translatesAutoresizingMaskIntoConstraints = false
 		self.view.addSubview(collectionView)
 	}
-
+	
 	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+		
+		if searchBar.isFirstResponder {
+			return  // Не обрабатываем касания, если клавиатура видима
+		}
+		
+		guard let item = dataSource?.itemIdentifier(for: indexPath) else { return }
 		let charVC = CharacterTableViewController()
-		charVC.viewModel = viewModel?.getViewModelCharacter(indexPath: indexPath)
+		charVC.viewModel = viewModel?.getViewModelCharacter(item: item)
 		viewModel?.openCell(viewController: charVC)
 	}
 }
+
+// MARK: - Setup DDS
+
+extension EpisodesViewController {
+	
+	private func configureDataSourse(collectionView: UICollectionView) {
+		dataSource = UICollectionViewDiffableDataSource<Section, Episode>(collectionView: collectionView) {
+			(collectionView, indexPath, item) -> UICollectionViewCell? in
+			guard let cell = collectionView.dequeueReusableCell(
+				withReuseIdentifier: EpisodeCellView.reuseIdentifier,
+				for: indexPath
+			) as? EpisodeCellView else { return UICollectionViewCell() }
+			
+			cell.configure(with: item, swipe: true)
+			
+			cell.onFavouriteToggle = { [weak self] in
+				self?.viewModel?.toggleFavorite(for: item)
+			}
+			cell.onDelete = { [weak self] in
+				self?.delete(item: item)
+			}
+			
+			return cell
+		}
+	}
+	
+	private func updateSnapshot() {
+		guard let viewModel = viewModel else { return }
+		var snapshot = NSDiffableDataSourceSnapshot<Section, Episode>()
+		snapshot.appendSections([.main])
+		snapshot.appendItems(viewModel.episodes)
+		self.dataSource?.apply(snapshot, animatingDifferences: true)
+	}
+	
+	private func delete(item: Episode) {
+		viewModel?.removeEpisode(item: item)
+		updateSnapshot()
+	}
+}
+
 
 // MARK: - Setup Constraints
 
