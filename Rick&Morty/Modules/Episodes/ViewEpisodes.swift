@@ -23,11 +23,11 @@ final class EpisodesViewController: UIViewController {
 	
 	// MARK: Dependency
 	
-	weak var viewModel: EpisodesViewModelProtocol?
+	var viewModel: VMProtocol?
 	
 	// MARK: Initialization
 	
-	init(viewModel: EpisodesViewModelProtocol) {
+	init(viewModel: VMProtocol) {
 		self.viewModel = viewModel
 		super.init(nibName: nil, bundle: nil)
 	}
@@ -44,7 +44,11 @@ final class EpisodesViewController: UIViewController {
 		setupElements()
 		setupCollectionView()
 		binding()
-		setupConstraints()
+	}
+	
+	override func viewDidLayoutSubviews() {
+		super.viewDidLayoutSubviews()
+		setupFrame()
 	}
 	
 	// MARK: - Private Meathods
@@ -52,8 +56,8 @@ final class EpisodesViewController: UIViewController {
 	// MARK: Setup UI
 	
 	func binding() {
-		DispatchQueue.main.async { [weak self] in
-			self?.viewModel?.updateUI = {
+			viewModel?.updateUI = {
+				DispatchQueue.main.async { [weak self] in
 				self?.updateSnapshot()
 			}
 		}
@@ -65,7 +69,7 @@ final class EpisodesViewController: UIViewController {
 		setupSearchBar()
 		
 		[logoImageView, searchBar, buttonSort].forEach {
-			$0.translatesAutoresizingMaskIntoConstraints = false
+			//			$0.translatesAutoresizingMaskIntoConstraints = false
 			self.view.addSubview($0)
 		}
 	}
@@ -74,6 +78,7 @@ final class EpisodesViewController: UIViewController {
 		buttonSort.customizeSortdButton()
 		let actionSortName = UIAction(title: "Название") { _ in
 			self.viewModel?.sortName()
+			print(type(of: self.viewModel?.sortName()))
 		}
 		
 		let actionSortSeason = UIAction(title: "Сезон") { _ in
@@ -110,9 +115,18 @@ extension EpisodesViewController: UISearchBarDelegate {
 		let toolbar = UIToolbar()
 		toolbar.sizeToFit()
 		toolbar.backgroundColor = #colorLiteral(red: 0.2941176471, green: 0.2941176471, blue: 0.2941176471, alpha: 1)
-		let doneButton = UIBarButtonItem(title: "Done", style: .done, target: self, action: #selector(doneButtonTapped))
+		let doneButton = UIBarButtonItem(
+			title: "Done",
+			style: .done,
+			target: self,
+			action: #selector(doneButtonTapped)
+		)
 		doneButton.tintColor = .black
-		let flexibleSpace = UIBarButtonItem(barButtonSystemItem: .flexibleSpace, target: nil, action: nil)
+		let flexibleSpace = UIBarButtonItem(
+			barButtonSystemItem: .flexibleSpace,
+			target: nil,
+			action: nil
+		)
 		toolbar.setItems([flexibleSpace, doneButton], animated: false)
 		return toolbar
 	}
@@ -167,22 +181,19 @@ extension EpisodesViewController: UICollectionViewDelegate {
 	func addCollectionView(layout: UICollectionViewLayout) {
 		collectionView = UICollectionView(frame: view.bounds, collectionViewLayout: layout)
 		collectionView.register(
-			EpisodeCellView.self, forCellWithReuseIdentifier: EpisodeCellView.reuseIdentifier)
-		
-		collectionView.translatesAutoresizingMaskIntoConstraints = false
+			EpisodeCellView.self, forCellWithReuseIdentifier: EpisodeCellView.cellIdentifier
+		)
 		self.view.addSubview(collectionView)
 	}
 	
 	func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
 		
 		if searchBar.isFirstResponder {
-			return  // Не обрабатываем касания, если клавиатура видима
+			return
 		}
 		
 		guard let item = dataSource?.itemIdentifier(for: indexPath) else { return }
-		let charVC = CharacterTableViewController()
-		charVC.viewModel = viewModel?.getViewModelCharacter(item: item)
-		viewModel?.openCell(viewController: charVC)
+		viewModel?.createCharcterVC(episode: item)
 	}
 }
 
@@ -191,17 +202,26 @@ extension EpisodesViewController: UICollectionViewDelegate {
 extension EpisodesViewController {
 	
 	private func configureDataSourse(collectionView: UICollectionView) {
-		dataSource = UICollectionViewDiffableDataSource<Section, Episode>(collectionView: collectionView) {
+		dataSource = UICollectionViewDiffableDataSource<Section, Episode>(collectionView: collectionView) { 
 			(collectionView, indexPath, item) -> UICollectionViewCell? in
 			guard let cell = collectionView.dequeueReusableCell(
-				withReuseIdentifier: EpisodeCellView.reuseIdentifier,
+				withReuseIdentifier: EpisodeCellView.cellIdentifier,
 				for: indexPath
-			) as? EpisodeCellView else { return UICollectionViewCell() }
+			) as? EpisodeCellView else { 
+				print("cell daun")
+				return UICollectionViewCell() }
 			
-			cell.configure(with: item, swipe: true)
+			guard let viewModel = self.viewModel else {
+				print("cell viewModel")
+				return cell }
+			
+			
+			let modelCell = viewModel.createViewModelCell(episode: item)
+			cell.configurator(with: modelCell, swipe: true)
+			
 			
 			cell.onFavouriteToggle = { [weak self] in
-				self?.viewModel?.toggleFavorite(for: item)
+				self?.viewModel?.isFavouriteToggle(for: item)
 			}
 			cell.onDelete = { [weak self] in
 				self?.delete(item: item)
@@ -226,30 +246,86 @@ extension EpisodesViewController {
 }
 
 
-// MARK: - Setup Constraints
+// MARK: - Setup Frame
 
 private extension EpisodesViewController {
-	func setupConstraints() {
+	
+	func setupFrame() {
 		
-		NSLayoutConstraint.activate([
-			logoImageView.heightAnchor.constraint(equalToConstant: 100),
-			logoImageView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-			logoImageView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
-			logoImageView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
-			
-			searchBar.topAnchor.constraint(equalTo: logoImageView.bottomAnchor, constant: 10),
-			searchBar.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 10),
-			searchBar.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -10),
-			
-			buttonSort.heightAnchor.constraint(equalToConstant: 60),
-			buttonSort.topAnchor.constraint(equalTo: searchBar.bottomAnchor, constant: 10),
-			buttonSort.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
-			buttonSort.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-			
-			collectionView.topAnchor.constraint(equalTo: buttonSort.bottomAnchor, constant: 10),
-			collectionView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-			collectionView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-			collectionView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
-		])
+		let intend: CGFloat = 10
+		
+		// Размеры и позиции для logoImageView
+		let logoHeight: CGFloat = 100
+		let logoTop = view.safeAreaInsets.top
+		let logoLeading: CGFloat = 30
+		let logoTrailing: CGFloat = 30
+		
+		let logoWidth = view.frame.width - logoLeading - logoTrailing
+		
+		logoImageView.frame = CGRect(
+			x: logoLeading,
+			y: logoTop,
+			width: logoWidth,
+			height: logoHeight
+		)
+		
+		// Размеры и позиции для searchBar
+		let searchBarTop = logoImageView.frame.maxY + intend
+		let searchBarLeading: CGFloat = intend
+		let searchBarTrailing: CGFloat = intend
+		
+		let searchBarWidth = view.frame.width - searchBarLeading - searchBarTrailing
+		
+		searchBar.frame = CGRect(
+			x: searchBarLeading,
+			y: searchBarTop,
+			width: searchBarWidth,
+			height: searchBar.intrinsicContentSize.height
+		)
+		
+		// Размеры и позиции для buttonSort
+		let buttonSortHeight: CGFloat = 60
+		let buttonSortTop = searchBar.frame.maxY + intend
+		let buttonSortLeading: CGFloat = 20
+		let buttonSortTrailing: CGFloat = 20
+		
+		let buttonSortWidth = view.frame.width - buttonSortLeading - buttonSortTrailing
+		
+		buttonSort.frame = CGRect(
+			x: buttonSortLeading,
+			y: buttonSortTop,
+			width: buttonSortWidth,
+			height: buttonSortHeight
+		)
+		
+		// Размеры и позиции для collectionView
+		let collectionViewTop = buttonSort.frame.maxY + intend
+		let collectionViewBottom = view.safeAreaInsets.bottom
+		let collectionViewLeading = view.safeAreaInsets.left
+		let collectionViewTrailing = view.safeAreaInsets.right
+		
+		let collectionViewHeight = view.frame.height - collectionViewTop - collectionViewBottom
+		let collectionViewWidth = view.frame.width - collectionViewLeading - collectionViewTrailing
+		
+		collectionView.frame = CGRect(
+			x: collectionViewLeading,
+			y: collectionViewTop,
+			width: collectionViewWidth,
+			height: collectionViewHeight
+		)
 	}
 }
+
+//
+//import SwiftUI
+//struct ViewControllerProvider: PreviewProvider {
+//	static var previews: some View {
+//		ContainerView().edgesIgnoringSafeArea(.all)
+//	}
+//	struct ContainerView: UIViewControllerRepresentable {
+//		func makeUIViewController(context: Context) -> some UIViewController {
+//			return EpisodesViewController(viewModel: EpisodesViewModel())
+//		}
+//		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
+//	}
+//}

@@ -1,5 +1,6 @@
 //
 //  Provider.swift
+//  Rick&Morty
 
 import Foundation
 
@@ -15,9 +16,13 @@ final class RickAndMortyProvider {
 			}
 		}
 		set {
-			queue.sync(flags: .barrier) {
+			queue.async(flags: .barrier) {
 				self.array = newValue
+				
 			}
 		}
 	}
+
+	init() { print("init Rick") }
+	deinit { print("deinit Rick") }
 }

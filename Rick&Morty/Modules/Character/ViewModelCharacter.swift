@@ -1,21 +1,6 @@
 //
-//  CharacterTableViewModel.swift
+//  ViewModelCharacterController.swift
 //  Rick&Morty
-
-import UIKit
-
-// MARK: enum DDS
-
-enum Sections {
-		case main
-	}
-	
-enum Сharacteristics: Hashable {
-		case gender(String)
-		case status(String)
-		case specie(String)
-		case origin(String)
-}
 
 // MARK: Protocol
 
@@ -23,8 +8,8 @@ protocol CharacterTableViewModelProtocol: AnyObject {
 	var character: Episode? { get }
 	var coordinator: CoordinatorProtocol? { get set }
 	
-	func goBack()
 	func getSectionInfo() -> [Сharacteristics]
+	func getConfiguration(for item: Сharacteristics) -> (text: String, secondaryText: String)?
 }
 
 // MARK: Class
@@ -34,7 +19,7 @@ final class CharacterTableViewModel: CharacterTableViewModelProtocol {
 	// MARK: Properties
 	
 	private(set) var character: Episode?
-	var coordinator: CoordinatorProtocol?
+	weak var coordinator: CoordinatorProtocol?
 	
 	// MARK: Init
 	
@@ -43,10 +28,6 @@ final class CharacterTableViewModel: CharacterTableViewModelProtocol {
 	}
 	
 	// MARK: - Methods
-	
-	func goBack() {
-		coordinator?.navigateBack()
-	}
 	
 	func getSectionInfo() -> [Сharacteristics] {
 		guard let character = character else { return [] }
@@ -57,9 +38,29 @@ final class CharacterTableViewModel: CharacterTableViewModelProtocol {
 						   .status(character.statusPers)]
 		return characteristics
 	}
+	
+	func getConfiguration(for item: Сharacteristics) -> (text: String, secondaryText: String)? {
+			guard let character = character else { return nil }
+			
+			switch item {
+				case .gender:
+					return ("Gender", character.genderPers)
+				case .origin:
+					return ("Origin", character.originPers)
+				case .specie:
+					return ("Specie", character.speciePers)
+				case .status:
+					return ("Status", character.statusPers)
+			}
+		}
+	
+	deinit {
+		print("deinit VM")
+	}
 }
 
-
-
-
-
+extension CharacterTableViewModelProtocol {
+	func returnToPreviousScreen() {
+		coordinator?.navigateBack()
+	}
+}

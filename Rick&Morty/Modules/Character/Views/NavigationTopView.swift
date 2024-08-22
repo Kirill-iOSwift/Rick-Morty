@@ -19,7 +19,6 @@ final class NavigationTopView: UIView {
 		self.goBack = goBack
 		super.init(frame: frame)
 		setupElement()
-		setupConstraints()
 	}
 	
 	required init?(coder: NSCoder) {
@@ -48,24 +47,30 @@ final class NavigationTopView: UIView {
 		image.layer.borderWidth = 1
 		
 		[image, buttot].forEach {
-			$0.translatesAutoresizingMaskIntoConstraints = false
 			addSubview($0)
 		}
 	}
 	
-	// MARK: Setup Constraints
+	override func layoutSubviews() {
+		super.layoutSubviews()
+		setupFrame()
+	}
 	
-	private func setupConstraints() {
-		NSLayoutConstraint.activate([
-			buttot.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-			buttot.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: 10),
-			buttot.topAnchor.constraint(equalTo: self.topAnchor,constant: 10),
-			buttot.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -10),
-			
-			image.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-			image.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -10),
-			image.widthAnchor.constraint(equalToConstant: 50),
-			image.heightAnchor.constraint(equalToConstant: 50),
-		])
+	// MARK: Setup Frame
+	
+	private func setupFrame() {
+		buttot.frame = CGRect(
+			x: 10,
+			y: (self.bounds.height - 50) / 2,
+			width: 100,
+			height: 50
+		)
+		image.frame = CGRect(
+			x: self.bounds.width - 60,
+			y: (self.bounds.height - 50) / 2,
+			width: 50,
+			height: 50
+		)
 	}
 }
+

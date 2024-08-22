@@ -10,7 +10,7 @@ final class EpisodeCellView: UICollectionViewCell {
 	
 	// MARK: Properties
 	
-	static let reuseIdentifier = "ItemCell"
+	static let cellIdentifier = "ItemCell"
 	
 	private var originalCenter: CGPoint = .zero
 	
@@ -36,7 +36,6 @@ final class EpisodeCellView: UICollectionViewCell {
 		super.init(frame: frame)
 		setupCell()
 		setupViews()
-		setupConstraints()
 	}
 	
 	required init?(coder: NSCoder) {
@@ -64,7 +63,6 @@ final class EpisodeCellView: UICollectionViewCell {
 	private func setupViews() {
 		
 		[imageView, labelCell, viewCell].forEach {
-			$0.translatesAutoresizingMaskIntoConstraints = false
 			contentView.addSubview($0)
 		}
 		image.image = UIImage(systemName: "play.tv")
@@ -73,25 +71,42 @@ final class EpisodeCellView: UICollectionViewCell {
 		button.addTarget(self, action: #selector(likeButtonPress), for: .touchUpInside)
 	}
 	
-	// MARK: Setup Constraints
+	// MARK: Setup Frame
 	
-	private func setupConstraints() {
-		NSLayoutConstraint.activate([
-			imageView.topAnchor.constraint(equalTo: contentView.topAnchor),
-			imageView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-			imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-			imageView.bottomAnchor.constraint(equalTo: labelCell.topAnchor),
-			
-			labelCell.bottomAnchor.constraint(equalTo: viewCell.topAnchor),
-			labelCell.heightAnchor.constraint(equalToConstant: 50),
-			labelCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-			labelCell.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-			
-			viewCell.heightAnchor.constraint(equalToConstant: 50),
-			viewCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-			viewCell.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-			viewCell.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
-		])
+	override func layoutSubviews() {
+		super.layoutSubviews()
+		setupFrame()
+	}
+	
+	private func setupFrame() {
+		let _: CGFloat = 15
+		let labelHeight: CGFloat = 50
+		let viewCellHeight: CGFloat = 50
+		
+		// Установка фрейма для imageView
+		imageView.frame = CGRect(
+			x: 0,
+			y: 0,
+			width: bounds.width,
+			height: bounds.height - labelHeight - viewCellHeight
+		)
+		
+		// Установка фрейма для labelCell
+		labelCell.frame = CGRect(
+			x: 0,
+			y: imageView.frame.maxY,
+			width: bounds.width,
+			height: labelHeight
+		)
+		
+		// Установка фрейма для viewCell
+		viewCell.frame = CGRect(
+			x: 0,
+			y: labelCell.frame.maxY,
+			width: bounds.width,
+			height: viewCellHeight
+		)
+		
 	}
 	
 	@objc private func likeButtonPress() {
@@ -107,28 +122,31 @@ final class EpisodeCellView: UICollectionViewCell {
 	
 	// MARK: Configure
 	
-	func configure(with item: Episode, swipe: Bool) {
-		let color: UIColor = item.isFavourite ? .red : .lightGray
+	func configurator(with model: ViewModelCollectionCellProtocol, swipe: Bool) {
+		let color: UIColor = model.isFavourite ? .red : .lightGray
 		button.tintColor = color
-		nameLabel.text = item.nameEpisode
-		episodeLabel.text = item.numberEpisode
-		imageView.setImage(from: item.imagePers)
+		nameLabel.text = model.titleEpisode
+		episodeLabel.text = model.numberEpisode
+		imageView.setImage(from: model.imageEpisode)
 		swipeOn = swipe
 		
 		if swipeOn {
 			setupGestureRecognizers()
 		}
 	}
+}
+
+// MARK: - Gesture Recognaizer
+
+private extension EpisodeCellView {
 	
-	// MARK: - Gesture Recognaizer
-	
-	private func setupGestureRecognizers() {
+	func setupGestureRecognizers() {
 		let leftSwipe = UISwipeGestureRecognizer(target: self, action: #selector(hendleSwipeLeft(_:)))
 		leftSwipe.direction = .left
 		self.addGestureRecognizer(leftSwipe)
 	}
 	
-	@objc private func hendleSwipeLeft(_ gesture: UISwipeGestureRecognizer) {
+	@objc func hendleSwipeLeft(_ gesture: UISwipeGestureRecognizer) {
 		if gesture.direction == .left {
 			UIView.animate(withDuration: 0.3) {
 				self.frame.origin.x = -(self.frame.width * 2)
@@ -138,3 +156,4 @@ final class EpisodeCellView: UICollectionViewCell {
 		}
 	}
 }
+

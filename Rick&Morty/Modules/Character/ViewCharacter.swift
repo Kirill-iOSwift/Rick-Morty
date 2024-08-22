@@ -11,10 +11,10 @@ final class CharacterTableViewController: UIViewController {
 	private let tableView = UITableView(frame: .zero, style: .insetGrouped)
 	private var dataSource: UITableViewDiffableDataSource<Sections, Сharacteristics>?
 	private lazy var topView = NavigationTopView(frame: .zero, goBack: { [weak self] in
-		self?.back()
+		self?.returnToPreviousScreen()
 	})
 	
-	var viewModel: CharacterTableViewModelProtocol?
+	var viewModel: (any CharacterTableViewModelProtocol)?
 	var picker: ImagePickerProtocol?
 	
 	// MARK: Life Cycle
@@ -24,7 +24,7 @@ final class CharacterTableViewController: UIViewController {
 		view.backgroundColor = .white
 		
 		setupElements()
-		setupContraints()
+//		setupContraints()
 		tableDataSourse(tableView: tableView)
 	}
 	
@@ -38,7 +38,7 @@ final class CharacterTableViewController: UIViewController {
 	private func setupElements() {
 		
 		[topView, tableView].forEach {
-			$0.translatesAutoresizingMaskIntoConstraints = false
+//			$0.translatesAutoresizingMaskIntoConstraints = false
 			self.view.addSubview($0)
 		}
 		
@@ -46,20 +46,26 @@ final class CharacterTableViewController: UIViewController {
 		tableView.delegate = self
 		tableView.backgroundColor = .white
 		tableView.isScrollEnabled = false
+		
+
 	}
 	
-	private func setupHeader() -> UIView? {
-		guard let pers = viewModel?.character else { return nil }
+	private func setupHeader() {
+		guard let pers = viewModel?.character else { return }
+		
 		let header = HeaderView(
-			frame: .zero,
+			frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 300),
 			nameCharacter: pers.namePers,
 			imageUrl: pers.imagePers,
 			imageCharacterView: imageCharacter
 		)
+		
 		header.bottonPhotoTapped = { [weak self] in
 			self?.showAler()
 		}
-		return header
+		
+		tableView.tableHeaderView = header
+		tableView.layoutIfNeeded()
 	}
 	
 	// MARK: - Alert Controller
@@ -144,54 +150,78 @@ final class CharacterTableViewController: UIViewController {
 		
 	}
 	
-// MARK: - Setup Constraints
-	
-	private func setupContraints() {
-		NSLayoutConstraint.activate([
-			
-			topView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-			topView.widthAnchor.constraint(equalTo: tableView.widthAnchor),
-			topView.heightAnchor.constraint(equalToConstant: 70),
-			
-			tableView.topAnchor.constraint(equalTo: topView.bottomAnchor),
-			tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-			tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-			tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-		])
+	override func viewDidLayoutSubviews() {
+		super.viewDidLayoutSubviews()
+		setupHeader()
+		setupFrames()
 	}
 	
-	private func back() {
-		viewModel?.goBack()
+// MARK: - Setup Constraints
+	
+	private func setupFrames() {
+		let safeAreaInsets = view.safeAreaInsets
+		
+		// Установка фрейма для topView
+		let topViewHeight: CGFloat = 70
+		let topViewWidth = view.bounds.width - (safeAreaInsets.left + safeAreaInsets.right)
+		
+		topView.frame = CGRect(
+			x: safeAreaInsets.left,
+			y: safeAreaInsets.top,
+			width: topViewWidth,
+			height: topViewHeight
+		)
+		
+		// Установка фрейма для tableView
+		tableView.frame = CGRect(
+			x: safeAreaInsets.left,
+			y: topView.frame.maxY,
+			width: topViewWidth,
+			height: view.bounds.height - topView.frame.maxY - safeAreaInsets.bottom
+		)
+	}
+
+//	
+//	private func setupContraints() {
+//		NSLayoutConstraint.activate([
+//			
+//			topView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+//			topView.widthAnchor.constraint(equalTo: tableView.widthAnchor),
+//			topView.heightAnchor.constraint(equalToConstant: 70),
+//			
+//			tableView.topAnchor.constraint(equalTo: topView.bottomAnchor),
+//			tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+//			tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+//			tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+//		])
+//	}
+	
+	private func returnToPreviousScreen() {
+		viewModel?.returnToPreviousScreen()
+	}
+	
+	deinit {
+		print("deinit VC")
 	}
 }
 // MARK: - Tableview DataSource / Delegate
 
 extension CharacterTableViewController: UITableViewDelegate {
-	func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-		setupHeader()
-	}
+//	func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+//		setupHeader()
+//	}
 	
 	private func configureDataSourse(tableView: UITableView) {
-		guard let character = viewModel?.character else { return }
 		
 		dataSource = UITableViewDiffableDataSource<Sections, Сharacteristics>(tableView: tableView) {
 			(tableView, indexPath, item) -> UITableViewCell? in
 			let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
 			var content = cell.defaultContentConfiguration()
 			content.secondaryTextProperties.font = .boldSystemFont(ofSize: 20)
-			switch item {
-				case .gender:
-					content.text = "Gender"
-					content.secondaryText = character.genderPers
-				case .origin:
-					content.text = "Origin"
-					content.secondaryText = character.statusPers
-				case .specie:
-					content.text = "Specie"
-					content.secondaryText = character.speciePers
-				case .status:
-					content.text = "Status"
-					content.secondaryText = character.originPers
+			
+			if let configuraion = self.viewModel?.getConfiguration(for: item) {
+				content.text = configuraion.text
+				content.secondaryText = configuraion.secondaryText
 			}
 			
 			cell.contentConfiguration = content
@@ -208,3 +238,17 @@ extension CharacterTableViewController: UITableViewDelegate {
 		dataSource?.apply(snapshot, animatingDifferences: true)
 	}
 }
+
+//import SwiftUI
+//struct ViewControllerProvider: PreviewProvider {
+//	static var previews: some View {
+//		ContainerView().edgesIgnoringSafeArea(.all)
+//	}
+//	struct ContainerView: UIViewControllerRepresentable {
+//		func makeUIViewController(context: Context) -> some UIViewController {
+//			return CharacterTableViewController()
+//		}
+//		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
+//	}
+//}
+
