@@ -37,4 +37,3 @@ extension UIImageView {
 		URLSession.shared.dataTask(with: url, completionHandler: completion).resume()
 	}
 }
-

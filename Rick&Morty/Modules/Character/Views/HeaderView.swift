@@ -33,7 +33,7 @@ final class HeaderView: UIView {
 		
 		super.init(frame: frame)
 		setupElements()
-		//		setupConstraints()
+		setupConstraints()
 	}
 	
 	required init?(coder: NSCoder) {
@@ -44,14 +44,14 @@ final class HeaderView: UIView {
 	
 	override func layoutSubviews() {
 		super.layoutSubviews()
-		
-		setupFrame()
+		imageCharacterView.layer.masksToBounds = true
+		imageCharacterView.layer.cornerRadius = imageCharacterView.frame.width / 2
 	}
 	
 	private func setupElements() {
 		
 		[imageCharacterView, buttonPhoto, nameCharacterLabel, infoLabel].forEach {
-			//			$0.translatesAutoresizingMaskIntoConstraints = false
+			$0.translatesAutoresizingMaskIntoConstraints = false
 			addSubview($0)
 		}
 		
@@ -76,49 +76,7 @@ final class HeaderView: UIView {
 		
 	}
 	
-	
-	
 	// MARK: Setup Constraints
-	
-	private func setupFrame() {
-		let padding: CGFloat = 10
-		let imageCharacterViewSize: CGFloat = 200
-		let buttonPhotoSize: CGFloat = 30
-		
-		// Устанавливаем фрейм для imageCharacterView
-		imageCharacterView.frame = CGRect(
-			x: 80, // Отступ от левого края
-			y: padding, // Отступ от верхнего края
-			width: imageCharacterViewSize,
-			height: imageCharacterViewSize
-		)
-		
-		// Устанавливаем фрейм для buttonPhoto
-		buttonPhoto.frame = CGRect(
-			x: imageCharacterView.frame.maxX + 16, // Отступ от правого края imageCharacterView
-			y: (imageCharacterView.frame.height - buttonPhotoSize) / 2, // Вертикально центрируем относительно imageCharacterView
-			width: buttonPhotoSize,
-			height: buttonPhotoSize
-		)
-		
-		// Устанавливаем фрейм для nameCharacterLabel
-		nameCharacterLabel.frame = CGRect(
-			x: padding, // Отступ от левого края
-			y: imageCharacterView.frame.maxY + 30, // Отступ от нижнего края imageCharacterView
-			width: self.bounds.width, // Ширина учитывает отступы
-			height: 20 // Высота метки
-		)
-		
-		// Устанавливаем фрейм для infoLabel
-		infoLabel.frame = CGRect(
-			x: padding, // Отступ от левого края
-			y: nameCharacterLabel.frame.maxY + 20, // Отступ от нижнего края nameCharacterLabel
-			width: self.bounds.width - 2 * padding, // Ширина учитывает отступы
-			height: 20 // Высота метки
-		)
-		imageCharacterView.layer.masksToBounds = true
-		imageCharacterView.layer.cornerRadius = imageCharacterView.frame.width / 2
-	}
 	
 	private func setupConstraints() {
 		

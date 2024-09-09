@@ -44,7 +44,7 @@ final class BottomView: UIView {
 		setupFrame()
 	}
 	
-	// MARK: Setup Constraints
+	// MARK: Setup Frame
 	
 	private func setupFrame() {
 		image.frame = CGRect(

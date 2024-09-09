@@ -4,7 +4,7 @@
 
 import UIKit
 
-// MARK: -NavigationTopView
+// MARK: NavigationTopView
 
 final class NavigationTopView: UIView {
 	

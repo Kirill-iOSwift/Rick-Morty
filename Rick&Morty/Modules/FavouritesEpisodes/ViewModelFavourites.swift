@@ -6,50 +6,46 @@ import Foundation
 
 protocol ViewModelFavouritesControllerProtocol: AnyObject {
 	var favouritesEpisodes: [Episode] { get }
+	var updateBaige: ((String) -> Void)? { get set }
+	var updateUI: (() -> Void)? { get set }
+	
 	func isFavouriteToggle(for episode: Episode)
 	func createCharcterVC(episode: Episode)
 	func createViewModelCell(episode: Episode) -> ViewModelCollectionCellProtocol
 	
-	var updateUI: (() -> Void)? { get set }
+	func saveEpisodes()
+	func removeEpisode(item: Episode)
 }
 
 final class ViewModelFavouritesController: ViewModelFavouritesControllerProtocol {
+	
 	var updateUI: (() -> Void)?
+	var updateBaige: ((String) -> Void)?
 	
-	
-	private var mainViewModel: VMProtocol
+	private var mainViewModel: ViewModelEpisodeProtocol
 	
 	var favouritesEpisodes: [Episode] = [] {
-
 		didSet {
-			print("favor",favouritesEpisodes.count)
+			updateBaige?("\(favouritesEpisodes.count)")
 			updateUI?()
+			saveEpisodes()
 		}
 	}
 	
-	init(mainViewModel: VMProtocol) {
+	init(mainViewModel: ViewModelEpisodeProtocol) {
 		self.mainViewModel = mainViewModel
 		bindToMainViewModel()
-//		updateFavouritesEpisodes()
-		
+		favouritesEpisodes = loadEpisodes()
 	}
 	
 	private func bindToMainViewModel() {
 		mainViewModel.updateFavor = { models in
-			self.favouritesEpisodes = models.filter { $0.isFavourite }
+			self.favouritesEpisodes.append(models)
 		}
-	}
-	
-	private func updateFavouritesEpisodes() {
-		favouritesEpisodes = mainViewModel.episodes.filter { $0.isFavourite }
 	}
 	
 	func isFavouriteToggle(for episode: Episode) {
-		if let index = favouritesEpisodes.firstIndex(where: { $0.id == episode.id }) {
-			mainViewModel.episodes[index].isFavourite.toggle()
-			updateFavouritesEpisodes()
-		}
-
+		mainViewModel.isFavouriteToggle(for: episode)
 	}
 	
 	func createCharcterVC(episode: Episode) {
@@ -57,6 +53,31 @@ final class ViewModelFavouritesController: ViewModelFavouritesControllerProtocol
 	}
 	
 	func createViewModelCell(episode: Episode) -> ViewModelCollectionCellProtocol {
-		return ViewModelCollectionCell(episode: episode)
+		return mainViewModel.createViewModelCell(episode: episode)
+	}
+	
+	// MARK: - User Defaults
+	
+	func saveEpisodes() {
+		let userDefaults = UserDefaults.standard
+		if let encodedData = try? JSONEncoder().encode(favouritesEpisodes) {
+			userDefaults.set(encodedData, forKey: "savedEpisodes")
+		}
+	}
+	
+	func loadEpisodes() -> [Episode] {
+		let userDefaults = UserDefaults.standard
+		if let savedData = userDefaults.data(forKey: "savedEpisodes") {
+			if let decodedEpisodes = try? JSONDecoder().decode([Episode].self, from: savedData) {
+				return decodedEpisodes
+			}
+		}
+		return []
+	}
+	
+	func removeEpisode(item: Episode) {
+		if let index = favouritesEpisodes.firstIndex(where: { $0.id == item.id }) {
+			favouritesEpisodes.remove(at: index)
+		}
 	}
 }

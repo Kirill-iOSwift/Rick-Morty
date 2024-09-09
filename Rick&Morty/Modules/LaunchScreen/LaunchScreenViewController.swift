@@ -65,8 +65,4 @@ final class LaunchScreenViewController: UIViewController {
 		rotation.repeatCount = .infinity
 		portalImageView.layer.add(rotation, forKey: "rotationAnimation")
 	}
-	
-	deinit {
-		print("Deinit LaunchScreen")
-	}
 }

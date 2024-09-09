@@ -34,6 +34,4 @@ struct ViewModelCollectionCell: ViewModelCollectionCellProtocol {
 	init(episode: Episode) {
 		self.episode = episode
 	}
-	
-	
 }

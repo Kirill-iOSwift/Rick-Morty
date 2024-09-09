@@ -1,19 +1,10 @@
 //
-//  NewViewModelMain.swift
+//  ViewModelEpisode.swift
 //  Rick&Morty
 
 import Foundation
 
-enum MainModel: Hashable {
-	enum Section: Hashable  {
-		case main
-	}
-	enum Structure: Hashable  {
-		case episodes(Episode)
-	}
-}
-
-protocol VMProtocol: AnyObject {
+protocol ViewModelEpisodeProtocol: AnyObject {
 	var episodes: [Episode] { get set }
 	var coordinator: CoordinatorProtocol? { get }
 	var updateUI: (() -> Void)? { get set }
@@ -25,10 +16,10 @@ protocol VMProtocol: AnyObject {
 	func createCharcterVC(episode: Episode)
 	func createViewModelCell(episode: Episode) -> ViewModelCollectionCellProtocol
 	
-	var updateFavor: (([Episode]) -> Void)? { get set }
+	var updateFavor: ((Episode) -> Void)? { get set }
 }
 
-extension VMProtocol {
+extension ViewModelEpisodeProtocol {
 	func sortName() {
 		episodes.sort { $0.nameEpisode < $1.nameEpisode }
 	}
@@ -38,21 +29,18 @@ extension VMProtocol {
 	}
 }
 
-final class NewViewModelMain: VMProtocol {
+final class ViewModelEpisode: ViewModelEpisodeProtocol {
 	
-//	private let mainEpisodes = RickAndMortyProvider()
 	private let networkManager = NetworkManager()
 	private var originalEpisides: [Episode] = []
 	
 	var episodes: [Episode] = [] {
 		didSet {
-			print(episodes.count)
 			updateUI?()
-			updateFavor?(episodes)
 		}
 	}
 	var updateUI: (() -> Void)?
-	var updateFavor: (([Episode]) -> Void)?
+	var updateFavor: ((Episode) -> Void)?
 	
 	weak var coordinator: CoordinatorProtocol?
 	
@@ -63,8 +51,13 @@ final class NewViewModelMain: VMProtocol {
 
 	private func loadData() {
 		networkManager.fetchEpisodeData { episodes in
-			self.originalEpisides = episodes
-			self.episodes = episodes
+			switch episodes {
+				case .success(let models):
+					self.originalEpisides = models
+					self.episodes = models
+				case .failure(let error):
+					print(error.localizedDescription)
+			}
 		}
 	}
 	
@@ -77,8 +70,9 @@ final class NewViewModelMain: VMProtocol {
 	func isFavouriteToggle(for episode: Episode) {
 		if let index = episodes.firstIndex(where: { $0.id == episode.id }) {
 			episodes[index].isFavourite.toggle()
+			updateFavor?(episode)
+			removeEpisode(item: episode)
 		}
-//		print(episodes.filter { $0.isFavourite }.count)
 	}
 	
 	func createCharcterVC(episode: Episode) {

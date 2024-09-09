@@ -24,7 +24,7 @@ final class CharacterTableViewController: UIViewController {
 		view.backgroundColor = .white
 		
 		setupElements()
-//		setupContraints()
+		setupContraints()
 		tableDataSourse(tableView: tableView)
 	}
 	
@@ -38,7 +38,7 @@ final class CharacterTableViewController: UIViewController {
 	private func setupElements() {
 		
 		[topView, tableView].forEach {
-//			$0.translatesAutoresizingMaskIntoConstraints = false
+			$0.translatesAutoresizingMaskIntoConstraints = false
 			self.view.addSubview($0)
 		}
 		
@@ -46,15 +46,13 @@ final class CharacterTableViewController: UIViewController {
 		tableView.delegate = self
 		tableView.backgroundColor = .white
 		tableView.isScrollEnabled = false
-		
-
 	}
 	
-	private func setupHeader() {
-		guard let pers = viewModel?.character else { return }
+	private func setupHeader() -> UIView? {
+		guard let pers = viewModel?.character else { return nil }
 		
 		let header = HeaderView(
-			frame: CGRect(x: 0, y: 0, width: view.bounds.width, height: 300),
+			frame: .zero,
 			nameCharacter: pers.namePers,
 			imageUrl: pers.imagePers,
 			imageCharacterView: imageCharacter
@@ -63,17 +61,13 @@ final class CharacterTableViewController: UIViewController {
 		header.bottonPhotoTapped = { [weak self] in
 			self?.showAler()
 		}
-		
-		tableView.tableHeaderView = header
-		tableView.layoutIfNeeded()
+		return header
 	}
 	
 	// MARK: - Alert Controller
 	
 	private func showAler() {
-		
-//		showBlurEffect()
-				
+
 		let alert = UIAlertController(
 			title: "Загрузите изображение",
 			message: nil,
@@ -81,23 +75,14 @@ final class CharacterTableViewController: UIViewController {
 		)
 		
 		let camera = UIAlertAction(title: "Камера", style: .default) { _ in
-//			self.showAlertAccess(
-//				title: "Разрешить доступ к камере",
-//				message: "Это необходимо, чтобы сканировать штрих-коды, номер карты и использовать другие возможности"
-//			)
 			self.showPicker(camera: true)
 		}
 		
 		let galery = UIAlertAction(title: "Галерея", style: .default) { _ in
-//			self.showAlertAccess(
-//				title: "Разрешить доступ к \"Фото\"",
-//				message: "Это необходимо для добавления ваших фотографий"
-//			)
 			self.showPicker(camera: false)
 		}
-		let cancel = UIAlertAction(title: "Отменить", style: .cancel) { _ in
-			
-		}
+		
+		let cancel = UIAlertAction(title: "Отменить", style: .cancel)
 		
 		alert.addAction(camera)
 		alert.addAction(galery)
@@ -130,86 +115,30 @@ final class CharacterTableViewController: UIViewController {
 		self.present(alert, animated: true)
 	}
 	
-	// MARK: Blur
-
-	let blurEffectView = UIVisualEffectView()
-	private func animateImageAndShowAlert() {
-		
+	private func setupContraints() {
+		NSLayoutConstraint.activate([
+			
+			topView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+			topView.widthAnchor.constraint(equalTo: tableView.widthAnchor),
+			topView.heightAnchor.constraint(equalToConstant: 70),
+			
+			tableView.topAnchor.constraint(equalTo: topView.bottomAnchor),
+			tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+			tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+			tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+		])
 	}
-	
-	private func showBlurEffect() {
-		let blurEffect = UIBlurEffect(style: .dark)
-		blurEffectView.effect = blurEffect
-		blurEffectView.frame = view.bounds
-
-		view.addSubview(blurEffectView)
-		view.insertSubview(imageCharacter, aboveSubview: blurEffectView)
-	}
-	
-	private func dismissBlurEffectAndReturnImage() {
-		
-	}
-	
-	override func viewDidLayoutSubviews() {
-		super.viewDidLayoutSubviews()
-		setupHeader()
-		setupFrames()
-	}
-	
-// MARK: - Setup Constraints
-	
-	private func setupFrames() {
-		let safeAreaInsets = view.safeAreaInsets
-		
-		// Установка фрейма для topView
-		let topViewHeight: CGFloat = 70
-		let topViewWidth = view.bounds.width - (safeAreaInsets.left + safeAreaInsets.right)
-		
-		topView.frame = CGRect(
-			x: safeAreaInsets.left,
-			y: safeAreaInsets.top,
-			width: topViewWidth,
-			height: topViewHeight
-		)
-		
-		// Установка фрейма для tableView
-		tableView.frame = CGRect(
-			x: safeAreaInsets.left,
-			y: topView.frame.maxY,
-			width: topViewWidth,
-			height: view.bounds.height - topView.frame.maxY - safeAreaInsets.bottom
-		)
-	}
-
-//	
-//	private func setupContraints() {
-//		NSLayoutConstraint.activate([
-//			
-//			topView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-//			topView.widthAnchor.constraint(equalTo: tableView.widthAnchor),
-//			topView.heightAnchor.constraint(equalToConstant: 70),
-//			
-//			tableView.topAnchor.constraint(equalTo: topView.bottomAnchor),
-//			tableView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-//			tableView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-//			tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-//		])
-//	}
 	
 	private func returnToPreviousScreen() {
 		viewModel?.returnToPreviousScreen()
-	}
-	
-	deinit {
-		print("deinit VC")
 	}
 }
 // MARK: - Tableview DataSource / Delegate
 
 extension CharacterTableViewController: UITableViewDelegate {
-//	func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-//		setupHeader()
-//	}
+	func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+		setupHeader()
+	}
 	
 	private func configureDataSourse(tableView: UITableView) {
 		
@@ -238,17 +167,4 @@ extension CharacterTableViewController: UITableViewDelegate {
 		dataSource?.apply(snapshot, animatingDifferences: true)
 	}
 }
-
-//import SwiftUI
-//struct ViewControllerProvider: PreviewProvider {
-//	static var previews: some View {
-//		ContainerView().edgesIgnoringSafeArea(.all)
-//	}
-//	struct ContainerView: UIViewControllerRepresentable {
-//		func makeUIViewController(context: Context) -> some UIViewController {
-//			return CharacterTableViewController()
-//		}
-//		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
-//	}
-//}
 

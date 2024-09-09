@@ -1,5 +1,5 @@
 //
-//  ModelMain.swift
+//  ModelEpisode.swift
 //  Rick&Morty
 
 import Foundation

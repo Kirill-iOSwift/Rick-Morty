@@ -23,11 +23,11 @@ final class EpisodesViewController: UIViewController {
 	
 	// MARK: Dependency
 	
-	var viewModel: VMProtocol?
+	weak var viewModel: ViewModelEpisodeProtocol?
 	
 	// MARK: Initialization
 	
-	init(viewModel: VMProtocol) {
+	init(viewModel: ViewModelEpisodeProtocol) {
 		self.viewModel = viewModel
 		super.init(nibName: nil, bundle: nil)
 	}
@@ -50,9 +50,7 @@ final class EpisodesViewController: UIViewController {
 		super.viewDidLayoutSubviews()
 		setupFrame()
 	}
-	
-	// MARK: - Private Meathods
-	
+		
 	// MARK: Setup UI
 	
 	func binding() {
@@ -69,7 +67,6 @@ final class EpisodesViewController: UIViewController {
 		setupSearchBar()
 		
 		[logoImageView, searchBar, buttonSort].forEach {
-			//			$0.translatesAutoresizingMaskIntoConstraints = false
 			self.view.addSubview($0)
 		}
 	}
@@ -78,7 +75,6 @@ final class EpisodesViewController: UIViewController {
 		buttonSort.customizeSortdButton()
 		let actionSortName = UIAction(title: "Название") { _ in
 			self.viewModel?.sortName()
-			print(type(of: self.viewModel?.sortName()))
 		}
 		
 		let actionSortSeason = UIAction(title: "Сезон") { _ in
@@ -207,26 +203,17 @@ extension EpisodesViewController {
 			guard let cell = collectionView.dequeueReusableCell(
 				withReuseIdentifier: EpisodeCellView.cellIdentifier,
 				for: indexPath
-			) as? EpisodeCellView else { 
-				print("cell daun")
-				return UICollectionViewCell() }
-			
-			guard let viewModel = self.viewModel else {
-				print("cell viewModel")
-				return cell }
-			
+			) as? EpisodeCellView else { return UICollectionViewCell() }
+			guard let viewModel = self.viewModel else { return cell }
 			
 			let modelCell = viewModel.createViewModelCell(episode: item)
-			cell.configurator(with: modelCell, swipe: true)
-			
-			
+			cell.configurator(with: modelCell, inFavourite: false)
 			cell.onFavouriteToggle = { [weak self] in
 				self?.viewModel?.isFavouriteToggle(for: item)
 			}
 			cell.onDelete = { [weak self] in
 				self?.delete(item: item)
 			}
-			
 			return cell
 		}
 	}
@@ -254,7 +241,6 @@ private extension EpisodesViewController {
 		
 		let intend: CGFloat = 10
 		
-		// Размеры и позиции для logoImageView
 		let logoHeight: CGFloat = 100
 		let logoTop = view.safeAreaInsets.top
 		let logoLeading: CGFloat = 30
@@ -269,7 +255,6 @@ private extension EpisodesViewController {
 			height: logoHeight
 		)
 		
-		// Размеры и позиции для searchBar
 		let searchBarTop = logoImageView.frame.maxY + intend
 		let searchBarLeading: CGFloat = intend
 		let searchBarTrailing: CGFloat = intend
@@ -283,7 +268,6 @@ private extension EpisodesViewController {
 			height: searchBar.intrinsicContentSize.height
 		)
 		
-		// Размеры и позиции для buttonSort
 		let buttonSortHeight: CGFloat = 60
 		let buttonSortTop = searchBar.frame.maxY + intend
 		let buttonSortLeading: CGFloat = 20
@@ -298,7 +282,6 @@ private extension EpisodesViewController {
 			height: buttonSortHeight
 		)
 		
-		// Размеры и позиции для collectionView
 		let collectionViewTop = buttonSort.frame.maxY + intend
 		let collectionViewBottom = view.safeAreaInsets.bottom
 		let collectionViewLeading = view.safeAreaInsets.left
@@ -315,17 +298,3 @@ private extension EpisodesViewController {
 		)
 	}
 }
-
-//
-//import SwiftUI
-//struct ViewControllerProvider: PreviewProvider {
-//	static var previews: some View {
-//		ContainerView().edgesIgnoringSafeArea(.all)
-//	}
-//	struct ContainerView: UIViewControllerRepresentable {
-//		func makeUIViewController(context: Context) -> some UIViewController {
-//			return EpisodesViewController(viewModel: EpisodesViewModel())
-//		}
-//		func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) { }
-//	}
-//}

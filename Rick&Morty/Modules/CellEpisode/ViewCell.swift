@@ -22,9 +22,7 @@ final class EpisodeCellView: UICollectionViewCell {
 	
 	var onFavouriteToggle: (() -> Void)?
 	var onDelete: (() -> Void)?
-	
-	private var swipeOn: Bool = true
-	
+		
 	private lazy var labelCell = NameLabel(frame: .zero, nameLabel: nameLabel)
 	private lazy var viewCell = BottomView(frame: .zero, label: episodeLabel, button: button, image: image)
 	
@@ -79,11 +77,9 @@ final class EpisodeCellView: UICollectionViewCell {
 	}
 	
 	private func setupFrame() {
-		let _: CGFloat = 15
 		let labelHeight: CGFloat = 50
 		let viewCellHeight: CGFloat = 50
 		
-		// Установка фрейма для imageView
 		imageView.frame = CGRect(
 			x: 0,
 			y: 0,
@@ -91,7 +87,6 @@ final class EpisodeCellView: UICollectionViewCell {
 			height: bounds.height - labelHeight - viewCellHeight
 		)
 		
-		// Установка фрейма для labelCell
 		labelCell.frame = CGRect(
 			x: 0,
 			y: imageView.frame.maxY,
@@ -99,14 +94,12 @@ final class EpisodeCellView: UICollectionViewCell {
 			height: labelHeight
 		)
 		
-		// Установка фрейма для viewCell
 		viewCell.frame = CGRect(
 			x: 0,
 			y: labelCell.frame.maxY,
 			width: bounds.width,
 			height: viewCellHeight
 		)
-		
 	}
 	
 	@objc private func likeButtonPress() {
@@ -122,17 +115,13 @@ final class EpisodeCellView: UICollectionViewCell {
 	
 	// MARK: Configure
 	
-	func configurator(with model: ViewModelCollectionCellProtocol, swipe: Bool) {
-		let color: UIColor = model.isFavourite ? .red : .lightGray
+	func configurator(with model: ViewModelCollectionCellProtocol, inFavourite: Bool) {
+		let color: UIColor = inFavourite ? .red : .lightGray
 		button.tintColor = color
 		nameLabel.text = model.titleEpisode
 		episodeLabel.text = model.numberEpisode
 		imageView.setImage(from: model.imageEpisode)
-		swipeOn = swipe
-		
-		if swipeOn {
-			setupGestureRecognizers()
-		}
+		setupGestureRecognizers()
 	}
 }
 

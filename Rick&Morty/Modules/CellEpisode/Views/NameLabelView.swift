@@ -16,7 +16,6 @@ final class NameLabel: UIView {
 		self.nameLabel = nameLabel
 		super.init(frame: frame)
 		setLabel()
-//		setupConstraints()
 	}
 	
 	required init?(coder: NSCoder) {
@@ -40,14 +39,14 @@ final class NameLabel: UIView {
 	
 	private func setupFrame() {
 		nameLabel.numberOfLines = 0
+		let maxLabelWidth = bounds.width - 30
+		let textSize = nameLabel.sizeThatFits(
+			CGSize(
+				width: maxLabelWidth,
+				height: CGFloat.greatestFiniteMagnitude
+			)
+		)
 		
-		// Вычисляем максимальную ширину для лейбла
-		let maxLabelWidth = bounds.width - 30 // Учитываем отступы
-		
-		// Прежде чем рассчитать высоту, нужно установить максимальную ширину лейбла
-		let textSize = nameLabel.sizeThatFits(CGSize(width: maxLabelWidth, height: CGFloat.greatestFiniteMagnitude))
-		
-		// Устанавливаем фрейм для лейбла
 		nameLabel.frame = CGRect(
 			x: 15,
 			y: (bounds.height - textSize.height) / 2,

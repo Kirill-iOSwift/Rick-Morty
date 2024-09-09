@@ -8,9 +8,9 @@ import UIKit
 
 protocol CoordinatorProtocol: AnyObject {
 	var navigationController: UINavigationController { get }
+
 	func startMain()
 	func navigateBack()
-	
 	func createCharcterVC(episode: Episode)
 }
 
@@ -26,7 +26,6 @@ final class MainCoordinator: CoordinatorProtocol {
 	
 	init(navigationController: UINavigationController) {
 		self.navigationController = navigationController
-		print("init coordin")
 	}
 	
 	// MARK: Methods

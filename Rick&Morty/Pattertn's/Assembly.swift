@@ -6,8 +6,8 @@ import UIKit
 
 struct AssemblyMainTabbar {
 	
-	func createMainViewModel(coordinator: CoordinatorProtocol) -> VMProtocol {
-		let mainViewModel = NewViewModelMain(coordinator: coordinator)
+	func createMainViewModel(coordinator: CoordinatorProtocol) -> ViewModelEpisodeProtocol {
+		let mainViewModel = ViewModelEpisode(coordinator: coordinator)
 		return mainViewModel
 	}
 
@@ -19,14 +19,14 @@ struct AssemblyMainTabbar {
 }
 
 struct AssemblyEpisodes {
-	func createEpisodes(mainViewModel: VMProtocol) -> UIViewController {
+	func createEpisodes(mainViewModel: ViewModelEpisodeProtocol) -> UIViewController {
 		let view = EpisodesViewController(viewModel: mainViewModel)
 		return view
 	}
 }
 
 struct AssemblyFavouritesEpisodes {
-	func createFavouritesEpisodes(mainViewModel: VMProtocol) -> UIViewController {
+	func createFavouritesEpisodes(mainViewModel: ViewModelEpisodeProtocol) -> UIViewController {
 		let viewModel = ViewModelFavouritesController(mainViewModel: mainViewModel)
 		let view = FavouriteEpisodeViewController(viewModel: viewModel)
 		return view

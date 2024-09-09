@@ -11,7 +11,7 @@ final class FavouriteEpisodeViewController: UIViewController {
 	enum Section: Hashable {
 		case main
 	}
-		
+	
 	// MARK: Private properties
 	
 	private let titleView = UIView()
@@ -26,7 +26,10 @@ final class FavouriteEpisodeViewController: UIViewController {
 	init(viewModel: ViewModelFavouritesControllerProtocol) {
 		self.viewModel = viewModel
 		super.init(nibName: nil, bundle: nil)
-		
+		changeNumberBadge()
+		DispatchQueue.main.async {
+			self.tabBarItem.badgeValue = "\(viewModel.favouritesEpisodes.count)"
+		}
 	}
 	
 	required init?(coder: NSCoder) {
@@ -43,26 +46,36 @@ final class FavouriteEpisodeViewController: UIViewController {
 		setupLayout()
 		binding()
 	}
-
+	
 	override func viewWillAppear(_ animated: Bool) {
 		super.viewWillAppear(animated)
-		guard let viewModel = viewModel else { return }
 		updateSnapshot()
-//		print(viewModel.favouritesEpisodes.count)
+	}
 	
+	override func viewDidDisappear(_ animated: Bool) {
+		super.viewDidDisappear(animated)
+		viewModel?.saveEpisodes()
 	}
 	
 	// MARK: - Private Meathods
 	
-	func binding() {
+	private func binding() {
 		viewModel?.updateUI = {
-				DispatchQueue.main.async { [weak self] in
+			DispatchQueue.main.async { [weak self] in
 				self?.updateSnapshot()
 			}
 		}
 	}
 	
 	// MARK: Setup UI
+	
+	private func changeNumberBadge() {
+		viewModel?.updateBaige = { [weak self] count in
+			DispatchQueue.main.async {
+				self?.tabBarItem.badgeValue = count
+			}
+		}
+	}
 	
 	private func setupNAvigationTitleView() {
 		
@@ -88,7 +101,7 @@ extension FavouriteEpisodeViewController {
 	private func setupCollectionView() {
 		addCollectionView(layout: createLayout())
 		collectionView.delegate = self
-	
+		
 		setupDataSource()
 		updateSnapshot()
 	}
@@ -101,7 +114,6 @@ extension FavouriteEpisodeViewController {
 		)
 		
 		let item = NSCollectionLayoutItem(layoutSize: itemSize)
-		
 		
 		let groupSize = NSCollectionLayoutSize(
 			widthDimension: .fractionalWidth(1),
@@ -147,11 +159,14 @@ extension FavouriteEpisodeViewController {
 				for: indexPath
 			) as? EpisodeCellView, let viewModel = self?.viewModel else { return UICollectionViewCell() }
 			let modelCell = viewModel.createViewModelCell(episode: item)
-			cell.configurator(with: modelCell, swipe: true)
+			cell.configurator(with: modelCell, inFavourite: true)
 			
 			cell.onFavouriteToggle = { [weak self] in
 				self?.viewModel?.isFavouriteToggle(for: item)
 				self?.updateSnapshot()
+			}
+			cell.onDelete = { [weak self] in
+				self?.delete(item: item)
 			}
 			return cell
 		}
@@ -159,11 +174,15 @@ extension FavouriteEpisodeViewController {
 	
 	private func updateSnapshot() {
 		guard let viewModel = viewModel else { return }
-//		let items = viewModel.episodes.filter { $0.isFavourite }
 		var snapshot = NSDiffableDataSourceSnapshot<Section, Episode>()
 		snapshot.appendSections([.main])
 		snapshot.appendItems(viewModel.favouritesEpisodes)
 		dataSource?.apply(snapshot, animatingDifferences: true)
+	}
+	
+	private func delete(item: Episode) {
+		viewModel?.removeEpisode(item: item)
+		updateSnapshot()
 	}
 }
 
@@ -176,7 +195,7 @@ extension FavouriteEpisodeViewController: UICollectionViewDelegate {
 }
 
 // MARK: Setup Costraints
- 
+
 private extension FavouriteEpisodeViewController {
 	func setupLayout() {
 		NSLayoutConstraint.activate([

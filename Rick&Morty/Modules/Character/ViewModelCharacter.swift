@@ -40,22 +40,18 @@ final class CharacterTableViewModel: CharacterTableViewModelProtocol {
 	}
 	
 	func getConfiguration(for item: Сharacteristics) -> (text: String, secondaryText: String)? {
-			guard let character = character else { return nil }
-			
-			switch item {
-				case .gender:
-					return ("Gender", character.genderPers)
-				case .origin:
-					return ("Origin", character.originPers)
-				case .specie:
-					return ("Specie", character.speciePers)
-				case .status:
-					return ("Status", character.statusPers)
-			}
+		guard let character = character else { return nil }
+		
+		switch item {
+			case .gender:
+				return ("Gender", character.genderPers)
+			case .origin:
+				return ("Origin", character.originPers)
+			case .specie:
+				return ("Specie", character.speciePers)
+			case .status:
+				return ("Status", character.statusPers)
 		}
-	
-	deinit {
-		print("deinit VM")
 	}
 }
 
