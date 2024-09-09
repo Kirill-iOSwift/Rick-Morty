@@ -11,10 +11,11 @@ final class CharacterTableViewController: UIViewController {
 	private let tableView = UITableView(frame: .zero, style: .insetGrouped)
 	private var dataSource: UITableViewDiffableDataSource<Sections, Сharacteristics>?
 	private lazy var topView = NavigationTopView(frame: .zero, goBack: { [weak self] in
-		self?.back()
+		self?.returnToPreviousScreen()
 	})
 	
-	var viewModel: CharacterTableViewModelProtocol?
+	var viewModel: (any CharacterTableViewModelProtocol)?
+	var picker: ImagePickerProtocol?
 	
 	// MARK: Life Cycle
 	
@@ -26,7 +27,7 @@ final class CharacterTableViewController: UIViewController {
 		setupContraints()
 		tableDataSourse(tableView: tableView)
 	}
-
+	
 	// MARK: Methods
 	
 	private func tableDataSourse(tableView: UITableView) {
@@ -49,25 +50,68 @@ final class CharacterTableViewController: UIViewController {
 	
 	private func setupHeader() -> UIView? {
 		guard let pers = viewModel?.character else { return nil }
+		
 		let header = HeaderView(
 			frame: .zero,
 			nameCharacter: pers.namePers,
-			imageUrl: pers.imagePers, imageCharacterView: imageCharacter
+			imageUrl: pers.imagePers,
+			imageCharacterView: imageCharacter
 		)
+		
 		header.bottonPhotoTapped = { [weak self] in
 			self?.showAler()
 		}
 		return header
 	}
 	
+	// MARK: - Alert Controller
+	
 	private func showAler() {
+
 		let alert = UIAlertController(
 			title: "Загрузите изображение",
 			message: nil,
 			preferredStyle: .actionSheet
 		)
-
-		alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
+		
+		let camera = UIAlertAction(title: "Камера", style: .default) { _ in
+			self.showPicker(camera: true)
+		}
+		
+		let galery = UIAlertAction(title: "Галерея", style: .default) { _ in
+			self.showPicker(camera: false)
+		}
+		
+		let cancel = UIAlertAction(title: "Отменить", style: .cancel)
+		
+		alert.addAction(camera)
+		alert.addAction(galery)
+		alert.addAction(cancel)
+		
+		self.present(alert, animated: true)
+	}
+	
+	func showPicker(camera: Bool) {
+		picker = ImagePicker(parentViewController: self)
+		if camera {
+			picker?.showImagePicker(sourceType: .camera, filter: nil) { [weak self] image in
+				self?.imageCharacter.image = image
+			}
+		} else {
+			picker?.showImagePicker(sourceType: nil, filter: .images) { [weak self] image in
+				self?.imageCharacter.image = image
+			}
+		}
+	}
+	
+	private func showAlertAccess(title: String, message: String) {
+		let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
+		let resolve = UIAlertAction(title: "Разрешить", style: .default)
+		let cancel = UIAlertAction(title: "Отменить", style: .cancel)
+		
+		alert.addAction(resolve)
+		alert.addAction(cancel)
+		
 		self.present(alert, animated: true)
 	}
 	
@@ -85,8 +129,8 @@ final class CharacterTableViewController: UIViewController {
 		])
 	}
 	
-	private func back() {
-		viewModel?.goBack()
+	private func returnToPreviousScreen() {
+		viewModel?.returnToPreviousScreen()
 	}
 }
 // MARK: - Tableview DataSource / Delegate
@@ -97,26 +141,16 @@ extension CharacterTableViewController: UITableViewDelegate {
 	}
 	
 	private func configureDataSourse(tableView: UITableView) {
-		guard let character = viewModel?.character else { return }
 		
 		dataSource = UITableViewDiffableDataSource<Sections, Сharacteristics>(tableView: tableView) {
 			(tableView, indexPath, item) -> UITableViewCell? in
 			let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
 			var content = cell.defaultContentConfiguration()
 			content.secondaryTextProperties.font = .boldSystemFont(ofSize: 20)
-			switch item {
-				case .gender:
-					content.text = "Gender"
-					content.secondaryText = character.genderPers
-				case .origin:
-					content.text = "Origin"
-					content.secondaryText = character.statusPers
-				case .specie:
-					content.text = "Specie"
-					content.secondaryText = character.speciePers
-				case .status:
-					content.text = "Status"
-					content.secondaryText = character.originPers
+			
+			if let configuraion = self.viewModel?.getConfiguration(for: item) {
+				content.text = configuraion.text
+				content.secondaryText = configuraion.secondaryText
 			}
 			
 			cell.contentConfiguration = content
@@ -133,3 +167,4 @@ extension CharacterTableViewController: UITableViewDelegate {
 		dataSource?.apply(snapshot, animatingDifferences: true)
 	}
 }
+

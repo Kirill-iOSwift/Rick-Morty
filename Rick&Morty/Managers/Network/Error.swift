@@ -5,8 +5,6 @@ import Foundation
 
 // MARK: - Error
 
-//TODO: Применить через Result
-
 enum NetworkError: Error {
 	
 	case invalidURL

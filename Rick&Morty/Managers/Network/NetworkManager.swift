@@ -14,47 +14,66 @@ fileprivate enum UrlRickAndMoarty: String {
 
 struct NetworkManager {
 	
-	func fetchEpisodeData(completion: @escaping ([Episode]) -> Void) {
-		
-		guard let url = URL(string: UrlRickAndMoarty.url.rawValue) else { return }
+	func fetchEpisodeData(completion: @escaping (Result<[Episode], NetworkError>) -> Void) {
+
+		guard let url = URL(string: UrlRickAndMoarty.url.rawValue) else {
+			completion(.failure(.invalidURL))
+			return
+		}
 		
 		let urlRequest = URLRequest(url: url)
 		let session = URLSession(configuration: .default)
 		let decoder = JSONDecoder()
 		let group = DispatchGroup()
-		
 		var modelCharacters = [Episode]()
-
+		let locker = NSLock()
+		
 		let task = session.dataTask(with: urlRequest) { (data, response, error) in
-
-			guard error == nil else {
-				return }
-			guard let data = data else { return }
+			if let error = error {
+				completion(.failure(.networkError(error)))
+				return
+			}
+			
+			guard let data = data else {
+				completion(.failure(.noData))
+				return
+			}
 			
 			do {
 				let response = try decoder.decode(RickAndMorty.self, from: data)
 				
 				for episode in response.results {
 					group.enter()
-					guard let character = episode.characters.randomElement() else { return }
-					self.fetchImageData(url: character) { character in
-						let model = self.createModel(episode: episode, character: character)
-							modelCharacters.append(model)
+					guard let characterURL = episode.characters.randomElement() else {
+						group.leave()
+						continue
+					}
+					
+					self.fetchImageData(url: characterURL) { result in
+						switch result {
+						case .success(let character):
+								let model = self.createModel(episode: episode, character: character)
+								locker.lock()
+								modelCharacters.append(model)
+								locker.unlock()
+						case .failure(let error):
+								print(error.localizedDescription)
+						}
 						group.leave()
 					}
 				}
-				group.notify(queue: .main) {
-					completion(modelCharacters)
+				
+				group.notify(queue: .global()) {
+					completion(.success(modelCharacters))
 				}
-			}
-			catch {
-				print(error.localizedDescription)
+			} catch {
+				completion(.failure(.decodingError(error)))
 			}
 		}
 		task.resume()
 	}
 	
-	private func fetchImageData(url: URL, completion: @escaping (RickAndMorty.Character) -> Void) {
+	private func fetchImageData(url: URL, completion: @escaping (Result<RickAndMorty.Character, NetworkError>) -> Void) {
 
 		let urlRequest = URLRequest(url: url)
 		let session = URLSession(configuration: .default)
@@ -62,14 +81,19 @@ struct NetworkManager {
 		
 		let task = session.dataTask(with: urlRequest) { (data, response, error) in
 			guard error == nil else {
+				completion(.failure(.invalidImageURL))
+				return
+			}
+			guard let data = data else { 
+				completion(.failure(.noData))
 				return }
-			guard let data = data else { return }
+			
 			do {
 				let response = try decoder.decode(RickAndMorty.Character.self, from: data)
-				completion(response)
+				completion(.success(response))
 			}
 			catch {
-				print(error.localizedDescription)
+				completion(.failure(.networkError(error)))
 			}
 		}
 		task.resume()

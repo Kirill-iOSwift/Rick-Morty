@@ -11,7 +11,7 @@ import UIKit
 
 extension UIButton {
 	func customizeSortdButton() {
-		self.setTitle("Advanced filters", for: .normal)
+		self.setTitle("Sorted", for: .normal)
 		self.backgroundColor = #colorLiteral(red: 0.4745098054, green: 0.8392156959, blue: 0.9764705896, alpha: 1)
 		self.titleLabel?.font = .systemFont(ofSize: 20)
 		self.tintColor = .blue

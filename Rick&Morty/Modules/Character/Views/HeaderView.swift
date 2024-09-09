@@ -50,6 +50,11 @@ final class HeaderView: UIView {
 	
 	private func setupElements() {
 		
+		[imageCharacterView, buttonPhoto, nameCharacterLabel, infoLabel].forEach {
+			$0.translatesAutoresizingMaskIntoConstraints = false
+			addSubview($0)
+		}
+		
 		imageCharacterView.contentMode = .scaleAspectFill
 		imageCharacterView.clipsToBounds = true
 		imageCharacterView.layer.borderColor = UIColor.black.cgColor
@@ -69,10 +74,6 @@ final class HeaderView: UIView {
 		infoLabel.font = .systemFont(ofSize: 22)
 		infoLabel.textAlignment = .left
 		
-		[imageCharacterView, buttonPhoto, nameCharacterLabel, infoLabel].forEach {
-			$0.translatesAutoresizingMaskIntoConstraints = false
-			addSubview($0)
-		}
 	}
 	
 	// MARK: Setup Constraints
@@ -101,7 +102,7 @@ final class HeaderView: UIView {
 	}
 	
 	@objc private func tapToButtonPhoto() {
-	bottonPhotoTapped?()
+		bottonPhotoTapped?()
 	}
 }
 

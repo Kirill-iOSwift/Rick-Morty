@@ -8,9 +8,10 @@ import UIKit
 
 protocol CoordinatorProtocol: AnyObject {
 	var navigationController: UINavigationController { get }
+
 	func startMain()
-	func openScreen(viewController: UIViewController) 
 	func navigateBack()
+	func createCharcterVC(episode: Episode)
 }
 
 // MARK: Class
@@ -25,18 +26,25 @@ final class MainCoordinator: CoordinatorProtocol {
 	
 	init(navigationController: UINavigationController) {
 		self.navigationController = navigationController
-		print("init coordin")
 	}
 	
 	// MARK: Methods
 	
 	private func setStartViewController() -> UIViewController {
-		let viewModel = EpisodesViewModel()
-		viewModel.coordinator = self
-		let episodes = EpisodesViewController(viewModel: viewModel)
-		let favourites = FavouriteEpisodeViewController(viewModel: viewModel)
-		let tabbarController = TabbarViewController(episodes: episodes, favourites: favourites)
-		return tabbarController
+
+		let main = AssemblyMainTabbar()
+		let mainViewModel = main.createMainViewModel(coordinator: self)
+		
+		let episodec = AssemblyEpisodes()
+		let episodecView = episodec.createEpisodes(mainViewModel: mainViewModel)
+		
+		
+		let favorites = AssemblyFavouritesEpisodes()
+		let favouritesView = favorites.createFavouritesEpisodes(mainViewModel: mainViewModel)
+		
+		let tabbar = main.createTabbar(episodes: episodecView, favotites: favouritesView)
+		
+		return tabbar
 	}
 	
 	func startMain() {
@@ -55,12 +63,14 @@ final class MainCoordinator: CoordinatorProtocol {
 		navigationController.setViewControllers(viewControllers, animated: true)
 	}
 	
-	func openScreen(viewController: UIViewController) {
-		navigationController.pushViewController(viewController, animated: true)
-	}
-	
 	func navigateBack() {
 		navigationController.popViewController(animated: true)
+	}
+	
+	func createCharcterVC(episode: Episode) {
+		let assebly = AssemblyCharacter()
+		let character = assebly.create(episode: episode, coordinator: self)
+		navigationController.pushViewController(character, animated: true)
 	}
 }
 

@@ -11,9 +11,13 @@ final class TabbarViewController: UITabBarController {
 	let episodes: UIViewController
 	let favourites: UIViewController
 	
+	
 	// MARK: Init
 	
-	init(episodes: UIViewController, favourites: UIViewController) {
+	init(
+		episodes: UIViewController,
+		favourites: UIViewController
+	) {
 		self.episodes = episodes
 		self.favourites = favourites
 		super.init(nibName: nil, bundle: nil)
